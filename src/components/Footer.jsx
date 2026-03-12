@@ -12,9 +12,9 @@ const Footer = () => {
           </p>
           <div className="flex space-x-4 mt-4">
             {/* Social Media Icons - Placeholder */}
-            <a href="#" className="text-gray-400 hover:text-primary"><i className="fab fa-facebook-f"></i>FB</a>
-            <a href="#" className="text-gray-400 hover:text-primary"><i className="fab fa-twitter"></i>TW</a>
-            <a href="#" className="text-gray-400 hover:text-primary"><i className="fab fa-instagram"></i>IG</a>
+            <a href="/" className="text-gray-400 hover:text-primary"><i className="fab fa-facebook-f"></i>FB</a>
+            <a href="/" className="text-gray-400 hover:text-primary"><i className="fab fa-twitter"></i>TW</a>
+            <a href="/" className="text-gray-400 hover:text-primary"><i className="fab fa-instagram"></i>IG</a>
           </div>
         </div>
 

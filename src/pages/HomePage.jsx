@@ -46,7 +46,7 @@ const HomePage = () => {
               Explore Our Courses
             </Link>
             <a
-              href="#" /* Placeholder for app download link */
+              href="/" /* Placeholder for app download link */
               className="bg-white text-dark font-bold text-xl py-4 px-8 rounded-full hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg animate-fade-in-up delay-600"
             >
               Download Our App
@@ -91,7 +91,7 @@ const HomePage = () => {
               Our companion Android app offers a personalized learning experience with interactive lessons, practice problems, real-time feedback, and progress tracking. Perfect for students on the go!
             </p>
             <a
-              href="#" /* Placeholder for app download link */
+              href="/" /* Placeholder for app download link */
               className="inline-block bg-primary text-white font-bold text-lg py-3 px-8 rounded-full hover:bg-green-600 transition-colors duration-300 transform hover:scale-105 shadow-md"
             >
               Get the App Now!
