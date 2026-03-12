@@ -132,12 +132,12 @@ const AdminDashboardPage = () => {
 
 
   return (
-    <div className="container mx-auto py-12 px-4 min-h-screen">
-      <h1 className="text-5xl font-bold text-dark mb-10 text-center">Admin Dashboard</h1>
+    <div className="container mx-auto py-8 md:py-12 px-4 min-h-screen">
+      <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-dark mb-8 md:mb-10 text-center">Admin Dashboard</h1>
 
       {/* Post Management */}
-      <section className="bg-light p-8 rounded-lg shadow-md mb-12">
-        <h2 className="text-4xl font-bold text-primary mb-8">Manage Posts</h2>
+      <section className="bg-light p-6 md:p-8 rounded-lg shadow-md mb-8 md:mb-12">
+        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary mb-6 md:mb-8">Manage Posts</h2>
         <button
           onClick={() => setEditingPost(null)}
           className="bg-secondary text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 transition-colors duration-300 mb-6"
@@ -151,7 +151,7 @@ const AdminDashboardPage = () => {
           onPostDeleted={handlePostDeleted}
         />
 
-        <h3 className="text-3xl font-bold text-dark mt-12 mb-6">Existing Posts</h3>
+        <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-dark mt-8 md:mt-12 mb-4 md:mb-6">Existing Posts</h3>
         {errorPosts && <ErrorDisplay message={errorPosts} />}
         {loadingPosts ? (
           <LoadingSpinner />
@@ -159,15 +159,15 @@ const AdminDashboardPage = () => {
           <div className="overflow-x-auto bg-white rounded-lg shadow-sm border border-gray-100">
             <table className="min-w-full bg-white table-auto">
               <thead>
-                <tr className="bg-gray-100 text-dark uppercase text-sm leading-normal">
-                  <th className="py-3 px-6 text-left">Title</th>
-                  <th className="py-3 px-6 text-left">Category</th>
-                  <th className="py-3 px-6 text-center">Likes</th>
-                  <th className="py-3 px-6 text-center">Date</th>
-                  <th className="py-3 px-6 text-center">Actions</th>
+                <tr className="bg-gray-100 text-dark uppercase text-xs sm:text-sm leading-normal">
+                  <th className="py-2 px-4 sm:py-3 sm:px-6 text-left">Title</th>
+                  <th className="py-2 px-4 sm:py-3 sm:px-6 text-left">Category</th>
+                  <th className="py-2 px-4 sm:py-3 sm:px-6 text-center">Likes</th>
+                  <th className="py-2 px-4 sm:py-3 sm:px-6 text-center">Date</th>
+                  <th className="py-2 px-4 sm:py-3 sm:px-6 text-center">Actions</th>
                 </tr>
               </thead>
-              <tbody className="text-gray-700 text-sm font-light">
+              <tbody className="text-gray-700 text-xs sm:text-sm font-light">
                 {posts.length === 0 ? (
                   <tr>
                     <td colSpan="5" className="py-4 text-center text-gray-500">No posts found.</td>
@@ -175,25 +175,25 @@ const AdminDashboardPage = () => {
                 ) : (
                   posts.map((post) => (
                     <tr key={post.id} className="border-b border-gray-200 hover:bg-gray-50">
-                      <td className="py-3 px-6 text-left whitespace-nowrap">
+                      <td className="py-2 px-4 sm:py-3 sm:px-6 text-left whitespace-nowrap">
                         <span className="font-medium">{post.title}</span>
                       </td>
-                      <td className="py-3 px-6 text-left">
-                        <span className="bg-blue-100 text-blue-800 py-1 px-3 rounded-full text-xs">{post.category}</span>
+                      <td className="py-2 px-4 sm:py-3 sm:px-6 text-left">
+                        <span className="bg-blue-100 text-blue-800 py-1 px-2 sm:px-3 rounded-full text-xs">{post.category}</span>
                       </td>
-                      <td className="py-3 px-6 text-center">{post.likes || 0}</td>
-                      <td className="py-3 px-6 text-center">{formatDate(post.timestamp)}</td>
-                      <td className="py-3 px-6 text-center">
-                        <div className="flex item-center justify-center space-x-2">
+                      <td className="py-2 px-4 sm:py-3 sm:px-6 text-center">{post.likes || 0}</td>
+                      <td className="py-2 px-4 sm:py-3 sm:px-6 text-center whitespace-nowrap">{formatDate(post.timestamp)}</td>
+                      <td className="py-2 px-4 sm:py-3 sm:px-6 text-center">
+                        <div className="flex flex-col sm:flex-row item-center justify-center space-y-1 sm:space-y-0 sm:space-x-2">
                           <button
                             onClick={() => setEditingPost(post)}
-                            className="bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600 transition-colors"
+                            className="bg-blue-500 text-white px-2 py-1 rounded-md hover:bg-blue-600 transition-colors text-xs"
                           >
                             Edit
                           </button>
                           <button
                             onClick={() => handlePostDeleted(post.id)} // Re-using delete handler for direct delete
-                            className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
+                            className="bg-red-500 text-white px-2 py-1 rounded-md hover:bg-red-600 transition-colors text-xs"
                           >
                             Delete
                           </button>
@@ -209,8 +209,8 @@ const AdminDashboardPage = () => {
       </section>
 
       {/* Reviews Moderation */}
-      <section className="bg-light p-8 rounded-lg shadow-md mb-12">
-        <h2 className="text-4xl font-bold text-primary mb-8">Moderates Reviews</h2>
+      <section className="bg-light p-6 md:p-8 rounded-lg shadow-md mb-8 md:mb-12">
+        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary mb-6 md:mb-8">Moderates Reviews</h2>
         {errorReviews && <ErrorDisplay message={errorReviews} />}
         {loadingReviews ? (
           <LoadingSpinner />
@@ -218,15 +218,15 @@ const AdminDashboardPage = () => {
           <div className="overflow-x-auto bg-white rounded-lg shadow-sm border border-gray-100">
             <table className="min-w-full bg-white table-auto">
               <thead>
-                <tr className="bg-gray-100 text-dark uppercase text-sm leading-normal">
-                  <th className="py-3 px-6 text-left">Reviewer</th>
-                  <th className="py-3 px-6 text-left">Rating</th>
-                  <th className="py-3 px-6 text-left">Feedback</th>
-                  <th className="py-3 px-6 text-center">Date</th>
-                  <th className="py-3 px-6 text-center">Actions</th>
+                <tr className="bg-gray-100 text-dark uppercase text-xs sm:text-sm leading-normal">
+                  <th className="py-2 px-4 sm:py-3 sm:px-6 text-left">Reviewer</th>
+                  <th className="py-2 px-4 sm:py-3 sm:px-6 text-left">Rating</th>
+                  <th className="py-2 px-4 sm:py-3 sm:px-6 text-left">Feedback</th>
+                  <th className="py-2 px-4 sm:py-3 sm:px-6 text-center">Date</th>
+                  <th className="py-2 px-4 sm:py-3 sm:px-6 text-center">Actions</th>
                 </tr>
               </thead>
-              <tbody className="text-gray-700 text-sm font-light">
+              <tbody className="text-gray-700 text-xs sm:text-sm font-light">
                 {reviews.length === 0 ? (
                   <tr>
                     <td colSpan="5" className="py-4 text-center text-gray-500">No reviews found.</td>
@@ -234,14 +234,14 @@ const AdminDashboardPage = () => {
                 ) : (
                   reviews.map((review) => (
                     <tr key={review.id} className="border-b border-gray-200 hover:bg-gray-50">
-                      <td className="py-3 px-6 text-left">{review.reviewerName || 'Anonymous'}</td>
-                      <td className="py-3 px-6 text-left">{review.rating}/5</td>
-                      <td className="py-3 px-6 text-left max-w-xs truncate">{review.feedbackText}</td>
-                      <td className="py-3 px-6 text-center">{formatDate(review.timestamp)}</td>
-                      <td className="py-3 px-6 text-center">
+                      <td className="py-2 px-4 sm:py-3 sm:px-6 text-left whitespace-nowrap">{review.reviewerName || 'Anonymous'}</td>
+                      <td className="py-2 px-4 sm:py-3 sm:px-6 text-left">{review.rating}/5</td>
+                      <td className="py-2 px-4 sm:py-3 sm:px-6 text-left max-w-[100px] sm:max-w-xs truncate">{review.feedbackText}</td>
+                      <td className="py-2 px-4 sm:py-3 sm:px-6 text-center whitespace-nowrap">{formatDate(review.timestamp)}</td>
+                      <td className="py-2 px-4 sm:py-3 sm:px-6 text-center">
                         <button
                           onClick={() => handleDeleteReview(review.id)}
-                          className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
+                          className="bg-red-500 text-white px-2 py-1 rounded-md hover:bg-red-600 transition-colors text-xs"
                         >
                           Delete
                         </button>
@@ -256,8 +256,8 @@ const AdminDashboardPage = () => {
       </section>
 
       {/* Comments Moderation */}
-      <section className="bg-light p-8 rounded-lg shadow-md">
-        <h2 className="text-4xl font-bold text-primary mb-8">Moderates Comments</h2>
+      <section className="bg-light p-6 md:p-8 rounded-lg shadow-md">
+        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary mb-6 md:mb-8">Moderates Comments</h2>
         {errorComments && <ErrorDisplay message={errorComments} />}
         {loadingComments ? (
           <LoadingSpinner />
@@ -265,15 +265,15 @@ const AdminDashboardPage = () => {
           <div className="overflow-x-auto bg-white rounded-lg shadow-sm border border-gray-100">
             <table className="min-w-full bg-white table-auto">
               <thead>
-                <tr className="bg-gray-100 text-dark uppercase text-sm leading-normal">
-                  <th className="py-3 px-6 text-left">Commenter</th>
-                  <th className="py-3 px-6 text-left">Comment</th>
-                  <th className="py-3 px-6 text-left">On Post</th>
-                  <th className="py-3 px-6 text-center">Date</th>
-                  <th className="py-3 px-6 text-center">Actions</th>
+                <tr className="bg-gray-100 text-dark uppercase text-xs sm:text-sm leading-normal">
+                  <th className="py-2 px-4 sm:py-3 sm:px-6 text-left">Commenter</th>
+                  <th className="py-2 px-4 sm:py-3 sm:px-6 text-left">Comment</th>
+                  <th className="py-2 px-4 sm:py-3 sm:px-6 text-left">On Post</th>
+                  <th className="py-2 px-4 sm:py-3 sm:px-6 text-center">Date</th>
+                  <th className="py-2 px-4 sm:py-3 sm:px-6 text-center">Actions</th>
                 </tr>
               </thead>
-              <tbody className="text-gray-700 text-sm font-light">
+              <tbody className="text-gray-700 text-xs sm:text-sm font-light">
                 {comments.length === 0 ? (
                   <tr>
                     <td colSpan="5" className="py-4 text-center text-gray-500">No comments found.</td>
@@ -281,18 +281,18 @@ const AdminDashboardPage = () => {
                 ) : (
                   comments.map((comment) => (
                     <tr key={comment.id} className="border-b border-gray-200 hover:bg-gray-50">
-                      <td className="py-3 px-6 text-left">{comment.commenterName || 'Anonymous'}</td>
-                      <td className="py-3 px-6 text-left max-w-xs truncate">{comment.commentText}</td>
-                      <td className="py-3 px-6 text-left">
-                        <a href={`/posts/${comment.postId}`} className="text-secondary hover:underline" target="_blank" rel="noopener noreferrer">
+                      <td className="py-2 px-4 sm:py-3 sm:px-6 text-left whitespace-nowrap">{comment.commenterName || 'Anonymous'}</td>
+                      <td className="py-2 px-4 sm:py-3 sm:px-6 text-left max-w-[100px] sm:max-w-xs truncate">{comment.commentText}</td>
+                      <td className="py-2 px-4 sm:py-3 sm:px-6 text-left">
+                        <a href={`/posts/${comment.postId}`} className="text-secondary hover:underline text-xs sm:text-sm" target="_blank" rel="noopener noreferrer">
                           {comment.postTitle || 'View Post'}
                         </a>
                       </td>
-                      <td className="py-3 px-6 text-center">{formatDate(comment.timestamp)}</td>
-                      <td className="py-3 px-6 text-center">
+                      <td className="py-2 px-4 sm:py-3 sm:px-6 text-center whitespace-nowrap">{formatDate(comment.timestamp)}</td>
+                      <td className="py-2 px-4 sm:py-3 sm:px-6 text-center">
                         <button
                           onClick={() => handleDeleteComment(comment.postId, comment.id)}
-                          className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
+                          className="bg-red-500 text-white px-2 py-1 rounded-md hover:bg-red-600 transition-colors text-xs"
                         >
                           Delete
                         </button>

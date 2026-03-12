@@ -42,19 +42,19 @@ const PostsPage = () => {
   }, [selectedCategory]);
 
   return (
-    <div className="container mx-auto py-12 px-4 min-h-screen">
-      <h1 className="text-5xl font-bold text-dark mb-10 text-center">Our Latest Posts & Resources</h1>
-      <p className="text-xl text-gray-700 text-center mb-12 max-w-3xl mx-auto">
+    <div className="container mx-auto py-8 md:py-12 px-4 min-h-screen">
+      <h1 className="text-4xl sm:text-5xl font-bold text-dark mb-8 md:mb-10 text-center">Our Latest Posts & Resources</h1>
+      <p className="text-base sm:text-xl text-gray-700 text-center mb-8 md:mb-12 max-w-3xl mx-auto">
         Explore a wide range of mathematical topics, challenging problems, intriguing puzzles, and insightful articles from our experts.
       </p>
 
       {/* Category Filter */}
-      <div className="flex flex-wrap justify-center gap-4 mb-10">
+      <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mb-8 md:mb-10">
         {categories.map(cat => (
           <button
             key={cat}
             onClick={() => setSelectedCategory(cat)}
-            className={`px-6 py-2 rounded-full text-lg font-semibold transition-all duration-300
+            className={`px-4 sm:px-6 py-1 sm:py-2 rounded-full text-sm sm:text-lg font-semibold transition-all duration-300 whitespace-nowrap
               ${selectedCategory === cat
                 ? 'bg-primary text-white shadow-md'
                 : 'bg-gray-200 text-dark hover:bg-gray-300'
@@ -69,10 +69,10 @@ const PostsPage = () => {
       {error && <ErrorDisplay message={error} />}
 
       {!loading && posts.length === 0 && !error && (
-        <p className="text-center text-gray-600 text-xl mt-8">No posts found for this category.</p>
+        <p className="text-center text-gray-600 text-base sm:text-xl mt-8">No posts found for this category.</p>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
         {posts.map(post => (
           <PostCard key={post.id} post={post} />
         ))}

@@ -45,7 +45,7 @@ const ReviewsPage = () => {
       stars.push(
         <svg
           key={i}
-          className={`w-5 h-5 ${i <= rating ? 'text-accent' : 'text-gray-300'}`}
+          className={`w-4 h-4 sm:w-5 sm:h-5 ${i <= rating ? 'text-accent' : 'text-gray-300'}`}
           fill="currentColor"
           viewBox="0 0 20 20"
         >
@@ -57,40 +57,40 @@ const ReviewsPage = () => {
   };
 
   return (
-    <div className="container mx-auto py-12 px-4 min-h-screen">
-      <h1 className="text-5xl font-bold text-dark mb-10 text-center">Student Reviews & Feedback</h1>
-      <p className="text-xl text-gray-700 text-center mb-12 max-w-3xl mx-auto">
+    <div className="container mx-auto py-8 md:py-12 px-4 min-h-screen">
+      <h1 className="text-4xl sm:text-5xl font-bold text-dark mb-8 md:mb-10 text-center">Student Reviews & Feedback</h1>
+      <p className="text-base sm:text-xl text-gray-700 text-center mb-8 md:mb-12 max-w-3xl mx-auto">
         Read what our students and parents have to say about their experience with Mathematico. Your feedback helps us grow!
       </p>
 
       {/* Review Submission Form */}
-      <div className="mb-12">
+      <div className="mb-8 md:mb-12">
         <ReviewForm onReviewAdded={fetchReviews} />
       </div>
 
-      <h2 className="text-4xl font-bold text-dark mb-8 text-center">What People Are Saying</h2>
+      <h2 className="text-3xl sm:text-4xl font-bold text-dark mb-6 md:mb-8 text-center">What People Are Saying</h2>
 
       {loading && <LoadingSpinner />}
       {error && <ErrorDisplay message={error} />}
 
       {!loading && reviews.length === 0 && !error && (
-        <p className="text-center text-gray-600 text-xl mt-8">No reviews yet. Be the first to leave one!</p>
+        <p className="text-center text-gray-600 text-base sm:text-xl mt-8">No reviews yet. Be the first to leave one!</p>
       )}
 
       {/* Display Existing Reviews */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
         {reviews.map(review => (
-          <div key={review.id} className="bg-white p-6 rounded-lg shadow-md border border-gray-100 flex flex-col">
-            <div className="flex items-center justify-between mb-3">
-              <p className="font-bold text-lg text-dark">{review.reviewerName || 'Anonymous'}</p>
-              <span className="text-gray-500 text-sm">{formatDate(review.timestamp)}</span>
+          <div key={review.id} className="bg-white p-4 sm:p-6 rounded-lg shadow-md border border-gray-100 flex flex-col">
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
+              <p className="font-bold text-base sm:text-lg text-dark">{review.reviewerName || 'Anonymous'}</p>
+              <span className="text-gray-500 text-xs sm:text-sm">{formatDate(review.timestamp)}</span>
             </div>
             {review.rating > 0 && (
-              <div className="mb-3">
+              <div className="mb-2 sm:mb-3">
                 {renderStars(review.rating)}
               </div>
             )}
-            <p className="text-gray-700 leading-relaxed flex-grow">{review.feedbackText}</p>
+            <p className="text-gray-700 leading-relaxed flex-grow text-sm sm:text-base">{review.feedbackText}</p>
           </div>
         ))}
       </div>
