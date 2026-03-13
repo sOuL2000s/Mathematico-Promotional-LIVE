@@ -34,9 +34,14 @@ const ContactPage = () => {
                 <p className="text-secondary">
                   <a href="tel:+919051089673" className="hover:text-primary transition-colors">+91 9051089673</a>
                 </p>
-                <p className="text-secondary mt-1 flex items-center">
-                  <FaWhatsapp className="inline-block text-green-500 mr-1.5" />
-                  <a href="https://wa.me/919748559613" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">WhatsApp: +91 9748559613</a>
+              </div>
+            </div>
+            <div className="flex items-start">
+              <FaWhatsapp className="text-accent text-2xl mr-3 mt-0.5 flex-shrink-0" />
+              <div>
+                <h3 className="text-lg sm:text-xl font-medium text-light-text mb-1">WhatsApp</h3>
+                <p className="text-secondary">
+                  <a href="https://wa.me/919748559613" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">+91 9748559613</a>
                 </p>
               </div>
             </div>
@@ -44,7 +49,7 @@ const ContactPage = () => {
               <MdEmail className="text-accent text-2xl mr-3 mt-0.5 flex-shrink-0" />
               <div>
                 <h3 className="text-lg sm:text-xl font-medium text-light-text mb-1">Email</h3>
-                <p className="text-secondary">
+                <p className="text-secondary break-all">
                   <a href="mailto:dipanjanchatterjee23@gmail.com" className="hover:text-primary transition-colors">dipanjanchatterjee23@gmail.com</a>
                 </p>
               </div>

@@ -34,7 +34,7 @@ const PostCard = ({ post }) => {
                 src={post.imageUrl}
                 alt={post.title}
                 className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
-                onError={(e) => { e.target.onerror = null; e.target.src = "https://via.placeholder.com/400x200?text=Mathematico+Post" }} // Fallback image
+                onError={(e) => { e.target.onerror = null; e.target.src = "/logo512.png" }} // Fallback image
               />
             )}
             <div className="absolute inset-0 bg-black bg-opacity-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">

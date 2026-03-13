@@ -51,7 +51,7 @@ const Footer = () => {
               <MdEmail className="text-accent text-xl mr-2 flex-shrink-0" />
               <a href="mailto:dipanjanchatterjee23@gmail.com" className="text-secondary hover:text-accent transition-colors">dipanjanchatterjee23@gmail.com</a>
             </li>
-            <li className="flex items-center justify-center sm:justify-start">
+            <li className="flex items-center justify-start">
               <MdPhone className="text-accent text-xl mr-2 flex-shrink-0" />
               <a href="tel:+919051089673" className="text-secondary hover:text-accent transition-colors">+91 9051089673</a>
             </li>

@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* KaTeX CSS for LaTeX rendering */
+@import 'katex/dist/katex.min.css';
+
 /* Custom scrollbar for a cleaner look, using new palette colors */
 ::-webkit-scrollbar {
   width: 8px;
@@ -22,5 +25,119 @@
   background: #4CC9F0; /* Accent Cyan */
 }
 
-/* Basic body styling moved to index.html for simplicity */
-/* You can add more global styles here if needed */
+/* Global Mathematical Theme Overlays */
+/* These will create subtle, non-intrusive mathematical patterns */
+body::before,
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1; /* Ensure it stays behind content */
+  pointer-events: none; /* Make it non-interactive */
+  opacity: 0.03; /* Very subtle */
+  mix-blend-mode: lighten; /* Blend mode for better effect on dark background */
+  background-repeat: repeat;
+  background-size: 150px; /* Adjust size of pattern */
+}
+
+/* Example 1: Subtle geometric pattern or a math symbol array */
+body::before {
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23C0C2CE' fill-opacity='0.4'%3E%3Cpath d='M96 95h4v1h-4v-1zm-9 1h4v1h-4v-1zm-9 0h4v1h-4v-1zm-9 0h4v1h-4v-1zm-9 0h4v1h-4v-1zm-9 0h4v1h-4v-1zm-9 0h4v1h-4v-1zm-9 0h4v1h-4v-1zm-9 0h4v1h-4v-1zm-9 0h4v1h-4v-1zm-9 0h4v1h-4v-1zm-9 0h4v1h-4v-1zM24 21h1v4h-1v-4zm-9 1h1v4h-1v-4zm-9 0h1v4h-1v-4zm-9 0h1v4h-1v-4zm-9 0h1v4h-1v-4zm-9 0h1v4h-1v-4z'/%3E%3C/g%3E%3C/svg%3E");
+  transform: rotate(15deg); /* Slightly rotate for dynamism */
+  animation: bg-scroll-diag 120s linear infinite; /* Slow diagonal scroll */
+}
+
+/* Example 2: Another layer, maybe with a different symbol or density */
+body::after {
+  background-image: url("data:image/svg+xml,%3Csvg width='50' height='50' viewBox='0 0 50 50' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23C0C2CE' fill-opacity='0.5'%3E%3Ctext x='0' y='40' font-family='sans-serif' font-size='40' fill='%23C0C2CE'%3E%C3%B7%3C/text%3E%3C/g%3E%3C/svg%3E"); /* Division symbol */
+  background-size: 100px;
+  transform: rotate(-30deg);
+  animation: bg-scroll-vertical 90s linear infinite reverse; /* Slow vertical scroll */
+}
+
+@keyframes bg-scroll-diag {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: -2000px -2000px; /* Adjust based on desired scroll distance */
+  }
+}
+
+@keyframes bg-scroll-vertical {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 0 -2000px;
+  }
+}
+
+/* Specific styling for markdown content, especially for KaTeX */
+.markdown-content .katex-display {
+  @apply overflow-x-auto p-2 bg-dark-background rounded-md my-4 border border-secondary;
+}
+
+.markdown-content p,
+.markdown-content li,
+.markdown-content span {
+  @apply text-secondary; /* Ensure standard text is readable */
+}
+
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
+.markdown-content h4,
+.markdown-content h5,
+.markdown-content h6 {
+  @apply text-light-text font-bold my-4;
+}
+
+.markdown-content a {
+  @apply text-primary hover:underline;
+}
+
+.markdown-content code {
+  @apply bg-medium-dark text-accent px-1 rounded-sm text-sm;
+}
+
+.markdown-content pre {
+  @apply bg-dark-background p-4 rounded-lg my-4 overflow-x-auto border border-secondary;
+}
+
+.markdown-content pre code {
+  @apply block whitespace-pre-wrap text-light-text;
+}
+
+.markdown-content blockquote {
+  @apply border-l-4 border-primary pl-4 my-4 italic text-gray-text;
+}
+
+.markdown-content ul,
+.markdown-content ol {
+  @apply list-inside list-disc ml-4 my-4 space-y-2;
+}
+
+.markdown-content hr {
+  @apply border-t border-secondary my-6;
+}
+
+.markdown-content table {
+  @apply w-full table-auto border-collapse my-4;
+}
+
+.markdown-content th,
+.markdown-content td {
+  @apply border border-secondary px-4 py-2 text-left;
+}
+
+.markdown-content th {
+  @apply bg-dark-background font-semibold text-light-text;
+}
+
+.markdown-content img {
+  @apply max-w-full h-auto rounded-lg shadow-md my-4;
+}

@@ -6,6 +6,10 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorDisplay from '../components/ErrorDisplay';
 import CommentForm from '../components/CommentForm';
 import { FaHeart, FaShareAlt } from 'react-icons/fa'; // Import heart and share icons
+import ReactMarkdown from 'react-markdown'; // Import ReactMarkdown
+import remarkGfm from 'remark-gfm'; // Plugin for GitHub Flavored Markdown
+import remarkMath from 'remark-math'; // Plugin for math syntax
+import rehypeKatex from 'rehype-katex'; // Plugin for KaTeX rendering
 
 const SinglePostPage = () => {
   const { id } = useParams();
@@ -14,6 +18,7 @@ const SinglePostPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [likeLoading, setLikeLoading] = useState(false);
+  const [hasLiked, setHasLiked] = useState(false); // New state for local like status
 
   const formatDate = (timestamp) => {
     if (!timestamp) return 'No Date';
@@ -29,7 +34,12 @@ const SinglePostPage = () => {
       const postSnap = await getDoc(postRef);
 
       if (postSnap.exists()) {
-        setPost({ id: postSnap.id, ...postSnap.data() });
+        const fetchedPost = { id: postSnap.id, ...postSnap.data() };
+        setPost(fetchedPost);
+
+        // Check local storage for like status
+        const likedPosts = JSON.parse(localStorage.getItem('likedPosts')) || {};
+        setHasLiked(!!likedPosts[id]);
 
         // Fetch comments for this post
         const commentsQuery = query(collection(db, 'posts', id, 'comments'), orderBy('timestamp', 'desc'));
@@ -55,7 +65,7 @@ const SinglePostPage = () => {
   }, [fetchPostAndComments]);
 
   const handleLike = async () => {
-    if (likeLoading) return;
+    if (likeLoading || hasLiked) return; // Prevent multiple likes and liking if already liked
     setLikeLoading(true);
     try {
       const postRef = doc(db, 'posts', id);
@@ -63,6 +73,14 @@ const SinglePostPage = () => {
         likes: increment(1),
       });
       setPost(prevPost => ({ ...prevPost, likes: (prevPost.likes || 0) + 1 }));
+
+      // Update local storage
+      const likedPosts = JSON.parse(localStorage.getItem('likedPosts')) || {};
+      likedPosts[id] = true;
+      localStorage.setItem('likedPosts', JSON.stringify(likedPosts));
+      setHasLiked(true); // Update local state to reflect like
+      alert('Post liked!');
+
     } catch (err) {
       console.error("Error liking post:", err);
       alert("Failed to like post. Please try again.");
@@ -102,15 +120,15 @@ const SinglePostPage = () => {
     <div className="container mx-auto py-8 md:py-12 px-4 min-h-screen">
       <div className="bg-medium-dark p-6 md:p-8 rounded-xl shadow-xl border border-secondary animate-fade-in-up">
         {post.imageUrl && (
-          <div className="w-full h-auto max-h-[500px] mb-6 md:mb-8 rounded-lg shadow-md overflow-hidden">
+          <div className="w-full mb-6 md:mb-8 rounded-lg shadow-md overflow-hidden bg-dark-background flex items-center justify-center max-h-[500px]">
             {isVideo(post.imageUrl) ? (
-              <video src={post.imageUrl} controls className="w-full h-full object-cover"></video>
+              <video src={post.imageUrl} controls className="w-full h-full object-contain max-h-[500px]"></video>
             ) : (
               <img
                 src={post.imageUrl}
                 alt={post.title}
-                className="w-full h-full object-cover object-center"
-                onError={(e) => { e.target.onerror = null; e.target.src = "https://via.placeholder.com/800x400?text=Mathematico+Post" }}
+                className="w-full h-full object-contain max-h-[500px] p-2" /* Added padding for better visibility if image touches edges */
+                onError={(e) => { e.target.onerror = null; e.target.src = "/logo512.png" }}
               />
             )}
           </div>
@@ -125,17 +143,25 @@ const SinglePostPage = () => {
           <span>{formatDate(post.timestamp)}</span>
         </div>
 
-        <div className="prose prose-sm sm:prose-lg max-w-none text-light-text leading-relaxed mb-6 md:mb-8">
-          {/* Using dangerouslySetInnerHTML for plain text, not for rich text editor output */}
-          <p className="text-secondary">{post.content}</p>
+        <div className="prose prose-sm sm:prose-lg max-w-none text-light-text leading-relaxed mb-6 md:mb-8 markdown-content">
+          {/* Use ReactMarkdown to render content with LaTeX support */}
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm, remarkMath]}
+            rehypePlugins={[rehypeKatex]}
+            children={post.content}
+            /* The 'className' prop on ReactMarkdown is deprecated. Styling should be applied to the parent or via the 'components' prop if specific elements need styling. */
+            /* The parent div already has 'markdown-content' class, and general markdown text is styled via 'src/styles/index.css' rules like '.markdown-content p'. */
+          />
         </div>
 
         {/* Interaction Buttons */}
         <div className="flex flex-wrap items-center space-x-4 sm:space-x-6 border-t border-b border-secondary py-3 md:py-4 mb-6 md:mb-8">
           <button
             onClick={handleLike}
-            className={`flex items-center space-x-1 sm:space-x-2 text-primary font-semibold hover:text-blue-600 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base`}
-            disabled={likeLoading}
+            className={`flex items-center space-x-1 sm:space-x-2 font-semibold transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base
+              ${hasLiked ? 'text-red-500 cursor-not-allowed' : 'text-primary hover:text-blue-600'}`}
+            disabled={likeLoading || hasLiked}
+            title={hasLiked ? "You've already liked this post" : "Like this post"}
           >
             <FaHeart className="w-5 h-5 sm:w-6 sm:h-6" />
             <span>Like ({post.likes || 0})</span>

@@ -31,8 +31,36 @@ const HomePage = () => {
   return (
     <div className="min-h-screen bg-dark-background">
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-primary to-[#2D4781] text-light-text py-16 md:py-24 px-4 text-center overflow-hidden">
-        <div className="container mx-auto">
+      <section className="relative bg-gradient-to-br from-dark-background via-[#1f232e] to-primary text-light-text py-16 md:py-24 px-4 text-center overflow-hidden">
+        {/* Mathematical background pattern */}
+        <div className="absolute inset-0 z-0 opacity-10" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%234CC9F0' fill-opacity='0.2'%3E%3Cpath d='M100 0L0 100V0h100zM0 100L100 0v100H0z'/%3E%3C/g%3E%3C/svg%3E")`,
+          backgroundSize: '200px',
+          animation: 'rotateAndZoom 60s infinite linear',
+          backgroundRepeat: 'repeat',
+          transform: 'scale(1.2)'
+        }}></div>
+         <div className="absolute inset-0 z-0 opacity-0.5" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%233D5A9E' fill-opacity='0.3'%3E%3Cpath d='M30 30L0 0H60z'/%3E%3C/g%3E%3C/svg%3E")`,
+          backgroundSize: '150px',
+          animation: 'panX 100s infinite linear alternate',
+          backgroundRepeat: 'repeat',
+          transform: 'scale(1.1)'
+        }}></div>
+
+        <style jsx="true">{`
+          @keyframes rotateAndZoom {
+            0% { background-position: 0% 0%; transform: scale(1.1) rotate(0deg); }
+            50% { background-position: 50% 50%; transform: scale(1.3) rotate(180deg); }
+            100% { background-position: 100% 100%; transform: scale(1.1) rotate(360deg); }
+          }
+          @keyframes panX {
+            from { background-position: 0% 0%; }
+            to { background-position: 100% 0%; }
+          }
+        `}</style>
+
+        <div className="container mx-auto relative z-10"> {/* Ensure content is above patterns */}
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold mb-4 md:mb-6 leading-tight animate-fade-in-up">
             Master Mathematics with <span className="text-accent">Mathematico</span>
           </h1>

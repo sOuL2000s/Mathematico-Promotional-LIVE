@@ -14,6 +14,11 @@ import AdminLoginPage from './pages/AdminLoginPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import NotFoundPage from './pages/NotFoundPage';
+import AdminLayout from './components/AdminLayout'; // Import AdminLayout
+import AdminPostsPage from './pages/AdminPostsPage'; // Import AdminPostsPage
+import AdminReviewsPage from './pages/AdminReviewsPage'; // Import AdminReviewsPage
+import AdminCommentsPage from './pages/AdminCommentsPage'; // Import AdminCommentsPage
+import AdminCoursesPage from './pages/AdminCoursesPage'; // Import AdminCoursesPage
 
 function App() {
   return (
@@ -34,7 +39,13 @@ function App() {
 
               {/* Protected Admin Routes */}
               <Route path="/admin" element={<ProtectedRoute />}>
-                <Route path="dashboard" element={<AdminDashboardPage />} />
+                <Route element={<AdminLayout />}> {/* Use AdminLayout for nested admin routes */}
+                  <Route path="dashboard" element={<AdminDashboardPage />} />
+                  <Route path="posts" element={<AdminPostsPage />} />
+                  <Route path="reviews" element={<AdminReviewsPage />} />
+                  <Route path="comments" element={<AdminCommentsPage />} />
+                  <Route path="courses" element={<AdminCoursesPage />} /> {/* New route for course management */}
+                </Route>
               </Route>
 
               {/* 404 Not Found Page */}
