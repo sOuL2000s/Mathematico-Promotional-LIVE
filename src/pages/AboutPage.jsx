@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaBullseye, FaLightbulb, FaHandsHelping, FaUsers, FaHistory } from 'react-icons/fa'; // Icons for sections
+import { FaBullseye, FaLightbulb, FaHandsHelping, FaHistory } from 'react-icons/fa'; // Icons for sections
 
 const AboutPage = () => {
   const sections = [
