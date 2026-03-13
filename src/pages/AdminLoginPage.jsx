@@ -5,6 +5,7 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useAuth } from '../context/AuthContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorDisplay from '../components/ErrorDisplay';
+import { FaUserShield } from 'react-icons/fa'; // Import an icon for admin login
 
 const AdminLoginPage = () => {
   const [email, setEmail] = useState('');
@@ -34,6 +35,8 @@ const AdminLoginPage = () => {
         errorMessage = "Invalid email format.";
       } else if (err.code === "auth/user-not-found" || err.code === "auth/wrong-password") {
         errorMessage = "Incorrect email or password.";
+      } else if (err.code === "auth/too-many-requests") {
+        errorMessage = "Too many failed login attempts. Please try again later.";
       }
       setError(errorMessage);
     } finally {
@@ -42,8 +45,11 @@ const AdminLoginPage = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 px-4">
-      <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md border border-gray-200">
+    <div className="flex items-center justify-center min-h-screen bg-light px-4 py-8">
+      <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md border border-gray-200 animate-fade-in">
+        <div className="text-primary text-6xl text-center mb-6">
+          <FaUserShield className="mx-auto" />
+        </div>
         <h1 className="text-4xl font-bold text-dark mb-8 text-center">Admin Login</h1>
         {error && <ErrorDisplay message={error} />}
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -54,7 +60,7 @@ const AdminLoginPage = () => {
             <input
               type="email"
               id="email"
-              className="shadow-sm appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="admin@example.com"
@@ -69,7 +75,7 @@ const AdminLoginPage = () => {
             <input
               type="password"
               id="password"
-              className="shadow-sm appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="********"
@@ -79,13 +85,13 @@ const AdminLoginPage = () => {
           </div>
           <button
             type="submit"
-            className="bg-primary text-white font-bold py-3 px-8 rounded-lg w-full hover:bg-green-600 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-lg"
+            className="bg-primary text-white font-bold py-3 px-8 rounded-lg w-full hover:bg-emerald-600 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-lg shadow-md hover:shadow-lg"
             disabled={loading}
           >
             {loading ? <LoadingSpinner /> : 'Log In'}
           </button>
         </form>
-        <p className="text-center text-gray-600 text-sm mt-6">
+        <p className="text-center text-gray-base text-sm mt-6">
           Only authorized administrators can access this section.
         </p>
       </div>

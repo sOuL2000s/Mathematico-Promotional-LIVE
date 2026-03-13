@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { FaHeart } from 'react-icons/fa'; // Import heart icon
 
 const PostCard = ({ post }) => {
   const formatDate = (timestamp) => {
@@ -9,30 +10,51 @@ const PostCard = ({ post }) => {
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   };
 
+  const isVideo = (url) => {
+    if (!url) return false;
+    const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.wmv', '.flv'];
+    return videoExtensions.some(ext => url.toLowerCase().includes(ext));
+  };
+
   return (
     <Link to={`/posts/${post.id}`} className="block">
-      <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden border border-gray-100 h-full flex flex-col">
+      <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-200 h-full flex flex-col group">
         {post.imageUrl && (
-          <img
-            src={post.imageUrl}
-            alt={post.title}
-            className="w-full h-48 object-cover object-center"
-            onError={(e) => { e.target.onerror = null; e.target.src = "https://via.placeholder.com/400x200?text=Mathematico+Post" }} // Fallback image
-          />
+          <div className="relative w-full h-48 overflow-hidden">
+            {isVideo(post.imageUrl) ? (
+              <video
+                src={post.imageUrl}
+                preload="metadata" // Load metadata to show first frame
+                className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
+              >
+                Your browser does not support the video tag.
+              </video>
+            ) : (
+              <img
+                src={post.imageUrl}
+                alt={post.title}
+                className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
+                onError={(e) => { e.target.onerror = null; e.target.src = "https://via.placeholder.com/400x200?text=Mathematico+Post" }} // Fallback image
+              />
+            )}
+            <div className="absolute inset-0 bg-black bg-opacity-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+              <span className="text-white text-lg font-bold">View Post</span>
+            </div>
+          </div>
         )}
-        <div className="p-6 flex flex-col flex-grow">
-          <span className="text-sm text-primary font-semibold mb-2 uppercase">{post.category}</span>
-          <h3 className="text-2xl font-bold text-dark mb-3 leading-tight hover:text-secondary transition-colors duration-200">
+        <div className="p-5 flex flex-col flex-grow">
+          <span className="text-sm text-primary font-semibold mb-2 uppercase tracking-wide">{post.category}</span>
+          <h3 className="text-2xl font-bold text-dark mb-3 leading-tight group-hover:text-secondary transition-colors duration-200">
             {post.title}
           </h3>
-          <p className="text-gray-600 text-base mb-4 flex-grow line-clamp-3">
+          <p className="text-gray-base text-base mb-4 flex-grow line-clamp-3">
             {post.content.substring(0, 150)}{post.content.length > 150 ? '...' : ''}
           </p>
           <div className="flex justify-between items-center text-gray-500 text-sm mt-auto pt-4 border-t border-gray-100">
-            <span>By {post.author || 'Admin'}</span>
-            <span>{formatDate(post.timestamp)}</span>
-            <span className="flex items-center">
-              <svg className="w-4 h-4 mr-1 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd"></path></svg>
+            <span className="text-gray-600">By {post.author || 'Admin'}</span>
+            <span className="text-gray-600">{formatDate(post.timestamp)}</span>
+            <span className="flex items-center text-red-500">
+              <FaHeart className="w-4 h-4 mr-1" />
               {post.likes || 0}
             </span>
           </div>

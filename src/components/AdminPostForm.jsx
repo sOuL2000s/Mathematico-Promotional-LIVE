@@ -3,6 +3,7 @@ import { db } from '../firebase';
 import { collection, addDoc, doc, updateDoc, deleteDoc, Timestamp } from 'firebase/firestore';
 import ErrorDisplay from './ErrorDisplay';
 import LoadingSpinner from './LoadingSpinner';
+import { FaTimes } from 'react-icons/fa'; // Import the close icon
 
 const categories = ['blog', 'problem', 'puzzle', 'riddle', 'article', 'quiz'];
 
@@ -21,9 +22,9 @@ const AdminPostForm = ({ post = null, onPostSaved, onPostDeleted }) => {
   const CLOUDINARY_UPLOAD_PRESET = process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET;
 
   useEffect(() => {
-    // Log Cloudinary credentials to verify they are loaded correctly
-    console.log('Cloudinary Cloud Name (from env):', CLOUDINARY_CLOUD_NAME);
-    console.log('Cloudinary Upload Preset (from env):', CLOUDINARY_UPLOAD_PRESET);
+    // Log Cloudinary credentials to verify they are loaded correctly (consider removing in prod)
+    // console.log('Cloudinary Cloud Name (from env):', CLOUDINARY_CLOUD_NAME);
+    // console.log('Cloudinary Upload Preset (from env):', CLOUDINARY_UPLOAD_PRESET);
 
     if (post) {
       setTitle(post.title || '');
@@ -78,6 +79,7 @@ const AdminPostForm = ({ post = null, onPostSaved, onPostDeleted }) => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+    formData.append('folder', 'mathematico_posts'); // Optional: organize uploads in a specific folder
 
     try {
       const xhr = new XMLHttpRequest();
@@ -203,7 +205,7 @@ const AdminPostForm = ({ post = null, onPostSaved, onPostDeleted }) => {
 
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md border border-gray-100">
+    <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
       <h3 className="text-2xl font-bold mb-6 text-dark">{post ? 'Edit Post' : 'Create New Post'}</h3>
       {error && <ErrorDisplay message={error} />}
       <form onSubmit={handleSubmit}>
@@ -214,7 +216,7 @@ const AdminPostForm = ({ post = null, onPostSaved, onPostDeleted }) => {
           <input
             type="text"
             id="title"
-            className="shadow-sm appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
@@ -228,7 +230,7 @@ const AdminPostForm = ({ post = null, onPostSaved, onPostDeleted }) => {
           <textarea
             id="content"
             rows="8"
-            className="shadow-sm appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-y"
+            className="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-y transition-all duration-200"
             value={content}
             onChange={(e) => setContent(e.target.value)}
             required
@@ -241,7 +243,7 @@ const AdminPostForm = ({ post = null, onPostSaved, onPostDeleted }) => {
           </label>
           <select
             id="category"
-            className="shadow-sm appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             disabled={loading}
@@ -266,7 +268,7 @@ const AdminPostForm = ({ post = null, onPostSaved, onPostDeleted }) => {
                        file:rounded-full file:border-0
                        file:text-sm file:font-semibold
                        file:bg-primary file:text-white
-                       hover:file:bg-green-600
+                       hover:file:bg-emerald-600
                        disabled:opacity-50 disabled:cursor-not-allowed"
             onChange={handleFileChange}
             accept="image/*,video/*" // Accept both image and video files
@@ -282,11 +284,11 @@ const AdminPostForm = ({ post = null, onPostSaved, onPostDeleted }) => {
               <button
                 type="button"
                 onClick={clearMedia}
-                className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 text-xs leading-none z-10 hover:bg-red-600 transition-colors"
+                className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 text-xs leading-none z-10 hover:bg-red-600 transition-colors flex items-center justify-center w-5 h-5"
                 title="Remove image/video"
                 disabled={loading}
               >
-                &times;
+                <FaTimes />
               </button>
             </div>
           )}
@@ -297,10 +299,10 @@ const AdminPostForm = ({ post = null, onPostSaved, onPostDeleted }) => {
             </div>
           )}
         </div>
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0 sm:space-x-4">
           <button
             type="submit"
-            className="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-green-600 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-emerald-600 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
             disabled={loading}
           >
             {loading ? <LoadingSpinner /> : (post ? 'Update Post' : 'Create Post')}
@@ -309,7 +311,7 @@ const AdminPostForm = ({ post = null, onPostSaved, onPostDeleted }) => {
             <button
               type="button"
               onClick={handleDelete}
-              className="bg-red-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-700 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-red-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-700 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
               disabled={loading}
             >
               {loading ? <LoadingSpinner /> : 'Delete Post'}

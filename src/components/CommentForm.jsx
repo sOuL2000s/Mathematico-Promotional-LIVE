@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { db } from '../firebase';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
 import ErrorDisplay from './ErrorDisplay';
+import LoadingSpinner from './LoadingSpinner'; // Ensure you have a LoadingSpinner component
 
 const CommentForm = ({ postId, onCommentAdded }) => {
   const [commenterName, setCommenterName] = useState('');
@@ -40,7 +41,7 @@ const CommentForm = ({ postId, onCommentAdded }) => {
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md border border-gray-100">
+    <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
       <h3 className="text-xl font-bold mb-4 text-dark">Leave a Comment</h3>
       {error && <ErrorDisplay message={error} />}
       <form onSubmit={handleSubmit}>
@@ -51,7 +52,7 @@ const CommentForm = ({ postId, onCommentAdded }) => {
           <input
             type="text"
             id="commenterName"
-            className="shadow-sm appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
             value={commenterName}
             onChange={(e) => setCommenterName(e.target.value)}
             placeholder="Anonymous"
@@ -65,7 +66,7 @@ const CommentForm = ({ postId, onCommentAdded }) => {
           <textarea
             id="commentText"
             rows="4"
-            className="shadow-sm appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-y"
+            className="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-y transition-all duration-200"
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
             placeholder="Share your thoughts..."
@@ -75,10 +76,10 @@ const CommentForm = ({ postId, onCommentAdded }) => {
         </div>
         <button
           type="submit"
-          className="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-green-600 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-emerald-600 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={loading}
         >
-          {loading ? 'Submitting...' : 'Submit Comment'}
+          {loading ? <LoadingSpinner /> : 'Submit Comment'}
         </button>
       </form>
     </div>

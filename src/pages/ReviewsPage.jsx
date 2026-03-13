@@ -4,6 +4,7 @@ import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import ReviewForm from '../components/ReviewForm';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorDisplay from '../components/ErrorDisplay';
+import { FaStar } from 'react-icons/fa'; // Import star icon
 
 const ReviewsPage = () => {
   const [reviews, setReviews] = useState([]);
@@ -43,14 +44,10 @@ const ReviewsPage = () => {
     const stars = [];
     for (let i = 1; i <= 5; i++) {
       stars.push(
-        <svg
+        <FaStar
           key={i}
           className={`w-4 h-4 sm:w-5 sm:h-5 ${i <= rating ? 'text-accent' : 'text-gray-300'}`}
-          fill="currentColor"
-          viewBox="0 0 20 20"
-        >
-          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-        </svg>
+        />
       );
     }
     return <div className="flex">{stars}</div>;
@@ -58,29 +55,29 @@ const ReviewsPage = () => {
 
   return (
     <div className="container mx-auto py-8 md:py-12 px-4 min-h-screen">
-      <h1 className="text-4xl sm:text-5xl font-bold text-dark mb-8 md:mb-10 text-center">Student Reviews & Feedback</h1>
-      <p className="text-base sm:text-xl text-gray-700 text-center mb-8 md:mb-12 max-w-3xl mx-auto">
+      <h1 className="text-4xl sm:text-5xl font-bold text-dark mb-8 md:mb-10 text-center animate-fade-in-up">Student Reviews & Feedback</h1>
+      <p className="text-base sm:text-xl text-gray-base text-center mb-8 md:mb-12 max-w-3xl mx-auto animate-fade-in-up animation-delay-100">
         Read what our students and parents have to say about their experience with Mathematico. Your feedback helps us grow!
       </p>
 
       {/* Review Submission Form */}
-      <div className="mb-8 md:mb-12">
+      <div className="mb-8 md:mb-12 animate-fade-in-up animation-delay-200">
         <ReviewForm onReviewAdded={fetchReviews} />
       </div>
 
-      <h2 className="text-3xl sm:text-4xl font-bold text-dark mb-6 md:mb-8 text-center">What People Are Saying</h2>
+      <h2 className="text-3xl sm:text-4xl font-bold text-dark mb-6 md:mb-8 text-center animate-fade-in-up animation-delay-300">What People Are Saying</h2>
 
       {loading && <LoadingSpinner />}
       {error && <ErrorDisplay message={error} />}
 
       {!loading && reviews.length === 0 && !error && (
-        <p className="text-center text-gray-600 text-base sm:text-xl mt-8">No reviews yet. Be the first to leave one!</p>
+        <p className="text-center text-gray-base text-base sm:text-xl mt-8 animate-fade-in">No reviews yet. Be the first to leave one!</p>
       )}
 
       {/* Display Existing Reviews */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-        {reviews.map(review => (
-          <div key={review.id} className="bg-white p-4 sm:p-6 rounded-lg shadow-md border border-gray-100 flex flex-col">
+        {reviews.map((review, index) => (
+          <div key={review.id} className="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-100 flex flex-col hover:shadow-lg transition-shadow duration-300 animate-fade-in-up" style={{ animationDelay: `${index * 0.1}s` }}>
             <div className="flex items-center justify-between mb-2 sm:mb-3">
               <p className="font-bold text-base sm:text-lg text-dark">{review.reviewerName || 'Anonymous'}</p>
               <span className="text-gray-500 text-xs sm:text-sm">{formatDate(review.timestamp)}</span>
@@ -90,7 +87,7 @@ const ReviewsPage = () => {
                 {renderStars(review.rating)}
               </div>
             )}
-            <p className="text-gray-700 leading-relaxed flex-grow text-sm sm:text-base">{review.feedbackText}</p>
+            <p className="text-gray-base leading-relaxed flex-grow text-sm sm:text-base">{review.feedbackText}</p>
           </div>
         ))}
       </div>

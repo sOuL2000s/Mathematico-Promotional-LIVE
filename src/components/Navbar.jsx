@@ -3,9 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
+import { GiHamburgerMenu } from "react-icons/gi";
+import { AiOutlineClose } from "react-icons/ai";
 
 const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false); // State to manage mobile menu visibility
+  const [isOpen, setIsOpen] = useState(false);
   const { currentUser } = useAuth();
   const navigate = useNavigate();
 
@@ -28,20 +30,23 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-dark p-4 shadow-lg sticky top-0 z-50">
-      <div className="container mx-auto flex justify-between items-center flex-wrap">
-        <Link to="/" className="text-white text-2xl md:text-3xl font-bold tracking-wider hover:text-primary transition-colors duration-300" onClick={closeMenu}>
+    <nav className="bg-dark p-4 shadow-xl sticky top-0 z-50">
+      <div className="container mx-auto flex justify-between items-center">
+        <Link to="/" className="text-white text-3xl font-bold tracking-wider hover:text-primary transition-colors duration-300" onClick={closeMenu}>
           Mathematico
         </Link>
         <div className="md:hidden">
-          <button onClick={toggleMenu} className="text-white focus:outline-none focus:ring-2 focus:ring-primary rounded p-1">
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={isOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}></path>
-            </svg>
+          <button onClick={toggleMenu} className="text-white focus:outline-none p-2 rounded-md hover:bg-gray-700 transition-colors">
+            {isOpen ? <AiOutlineClose className="w-7 h-7" /> : <GiHamburgerMenu className="w-7 h-7" />}
           </button>
         </div>
-        <div className={`w-full md:flex md:items-center md:w-auto ${isOpen ? 'flex flex-col h-auto overflow-visible' : 'hidden'} mt-4 md:mt-0`}>
-          <div className="flex flex-col md:flex-row md:space-x-6 text-lg md:space-y-0 space-y-2">
+        <div className={`fixed inset-y-0 right-0 w-64 bg-dark transform ${isOpen ? 'translate-x-0' : 'translate-x-full'} transition-transform duration-300 ease-in-out md:static md:flex md:w-auto md:bg-transparent md:transform-none md:transition-none z-40`}>
+          <div className="flex justify-end p-4 md:hidden">
+            <button onClick={closeMenu} className="text-white focus:outline-none p-2 rounded-md hover:bg-gray-700 transition-colors">
+              <AiOutlineClose className="w-7 h-7" />
+            </button>
+          </div>
+          <div className="flex flex-col p-4 md:p-0 md:flex-row md:space-x-6 text-xl md:space-y-0 space-y-4 md:text-lg">
             <NavLink to="/" onClick={closeMenu}>Home</NavLink>
             <NavLink to="/about" onClick={closeMenu}>About Us</NavLink>
             <NavLink to="/courses" onClick={closeMenu}>Courses</NavLink>
@@ -53,7 +58,7 @@ const Navbar = () => {
                 <NavLink to="/admin/dashboard" onClick={closeMenu}>Dashboard</NavLink>
                 <button
                   onClick={() => { handleLogout(); closeMenu(); }}
-                  className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors duration-300 w-full md:w-auto text-left md:text-center"
+                  className="bg-red-600 text-white px-5 py-2 rounded-lg hover:bg-red-700 transition-colors duration-300 w-full md:w-auto text-left md:text-center font-semibold mt-4 md:mt-0"
                 >
                   Logout
                 </button>
@@ -64,6 +69,8 @@ const Navbar = () => {
           </div>
         </div>
       </div>
+      {/* Overlay for mobile menu */}
+      {isOpen && <div className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden" onClick={closeMenu}></div>}
     </nav>
   );
 };
@@ -71,11 +78,11 @@ const Navbar = () => {
 const NavLink = ({ to, children, onClick }) => (
   <Link
     to={to}
-    className="text-white hover:text-primary transition-colors duration-300 relative group py-2 md:py-0 block"
+    className="text-white hover:text-primary transition-colors duration-300 relative group py-2 block font-medium"
     onClick={onClick}
   >
     {children}
-    <span className="absolute left-0 bottom-0 md:bottom-[-4px] w-full h-0.5 bg-primary transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></span>
+    <span className="absolute left-0 bottom-0 w-full h-0.5 bg-primary transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></span>
   </Link>
 );
 
