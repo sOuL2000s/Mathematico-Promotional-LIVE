@@ -2,24 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom scrollbar for a cleaner look */
+/* Custom scrollbar for a cleaner look, using new palette colors */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #1A1C25; /* Dark Midnight Navy */
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1; /* Tailwind gray-300 */
+  background: #3D5A9E; /* Primary Blue */
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8; /* Tailwind gray-400 */
+  background: #4CC9F0; /* Accent Cyan */
 }
 
 /* Basic body styling moved to index.html for simplicity */

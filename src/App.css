@@ -14,18 +14,18 @@
 }
 
 .App-header {
-  background-color: #282c34;
+  background-color: #1A1C25; /* Deep Midnight Navy */
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   font-size: calc(10px + 2vmin);
-  color: white;
+  color: #E5E7EB; /* Off-White / Pearl */
 }
 
 .App-link {
-  color: #61dafb;
+  color: #4CC9F0; /* Bright Electric Cyan */
 }
 
 @keyframes App-logo-spin {

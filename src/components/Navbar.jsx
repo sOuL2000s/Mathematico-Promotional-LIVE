@@ -30,19 +30,19 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-dark p-4 shadow-xl sticky top-0 z-50">
+    <nav className="bg-dark-background p-4 shadow-xl sticky top-0 z-50">
       <div className="container mx-auto flex justify-between items-center">
-        <Link to="/" className="text-white text-3xl font-bold tracking-wider hover:text-primary transition-colors duration-300" onClick={closeMenu}>
+        <Link to="/" className="text-light-text text-3xl font-bold tracking-wider hover:text-primary transition-colors duration-300" onClick={closeMenu}>
           Mathematico
         </Link>
         <div className="md:hidden">
-          <button onClick={toggleMenu} className="text-white focus:outline-none p-2 rounded-md hover:bg-gray-700 transition-colors">
+          <button onClick={toggleMenu} className="text-light-text focus:outline-none p-2 rounded-md hover:bg-medium-dark transition-colors">
             {isOpen ? <AiOutlineClose className="w-7 h-7" /> : <GiHamburgerMenu className="w-7 h-7" />}
           </button>
         </div>
-        <div className={`fixed inset-y-0 right-0 w-64 bg-dark transform ${isOpen ? 'translate-x-0' : 'translate-x-full'} transition-transform duration-300 ease-in-out md:static md:flex md:w-auto md:bg-transparent md:transform-none md:transition-none z-40`}>
+        <div className={`fixed inset-y-0 right-0 w-64 bg-dark-background transform ${isOpen ? 'translate-x-0' : 'translate-x-full'} transition-transform duration-300 ease-in-out md:static md:flex md:w-auto md:bg-transparent md:transform-none md:transition-none z-40`}>
           <div className="flex justify-end p-4 md:hidden">
-            <button onClick={closeMenu} className="text-white focus:outline-none p-2 rounded-md hover:bg-gray-700 transition-colors">
+            <button onClick={closeMenu} className="text-light-text focus:outline-none p-2 rounded-md hover:bg-medium-dark transition-colors">
               <AiOutlineClose className="w-7 h-7" />
             </button>
           </div>
@@ -58,7 +58,7 @@ const Navbar = () => {
                 <NavLink to="/admin/dashboard" onClick={closeMenu}>Dashboard</NavLink>
                 <button
                   onClick={() => { handleLogout(); closeMenu(); }}
-                  className="bg-red-600 text-white px-5 py-2 rounded-lg hover:bg-red-700 transition-colors duration-300 w-full md:w-auto text-left md:text-center font-semibold mt-4 md:mt-0"
+                  className="bg-red-600 text-light-text px-5 py-2 rounded-lg hover:bg-red-700 transition-colors duration-300 w-full md:w-auto text-left md:text-center font-semibold mt-4 md:mt-0"
                 >
                   Logout
                 </button>
@@ -78,7 +78,7 @@ const Navbar = () => {
 const NavLink = ({ to, children, onClick }) => (
   <Link
     to={to}
-    className="text-white hover:text-primary transition-colors duration-300 relative group py-2 block font-medium"
+    className="text-light-text hover:text-primary transition-colors duration-300 relative group py-2 block font-medium"
     onClick={onClick}
   >
     {children}

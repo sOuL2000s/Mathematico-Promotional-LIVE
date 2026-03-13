@@ -18,7 +18,7 @@ const PostCard = ({ post }) => {
 
   return (
     <Link to={`/posts/${post.id}`} className="block">
-      <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-200 h-full flex flex-col group">
+      <div className="bg-medium-dark rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-secondary h-full flex flex-col group">
         {post.imageUrl && (
           <div className="relative w-full h-48 overflow-hidden">
             {isVideo(post.imageUrl) ? (
@@ -38,21 +38,21 @@ const PostCard = ({ post }) => {
               />
             )}
             <div className="absolute inset-0 bg-black bg-opacity-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-              <span className="text-white text-lg font-bold">View Post</span>
+              <span className="text-light-text text-lg font-bold">View Post</span>
             </div>
           </div>
         )}
         <div className="p-5 flex flex-col flex-grow">
           <span className="text-sm text-primary font-semibold mb-2 uppercase tracking-wide">{post.category}</span>
-          <h3 className="text-2xl font-bold text-dark mb-3 leading-tight group-hover:text-secondary transition-colors duration-200">
+          <h3 className="text-2xl font-bold text-light-text mb-3 leading-tight group-hover:text-accent transition-colors duration-200">
             {post.title}
           </h3>
-          <p className="text-gray-base text-base mb-4 flex-grow line-clamp-3">
+          <p className="text-gray-text text-base mb-4 flex-grow line-clamp-3">
             {post.content.substring(0, 150)}{post.content.length > 150 ? '...' : ''}
           </p>
-          <div className="flex justify-between items-center text-gray-500 text-sm mt-auto pt-4 border-t border-gray-100">
-            <span className="text-gray-600">By {post.author || 'Admin'}</span>
-            <span className="text-gray-600">{formatDate(post.timestamp)}</span>
+          <div className="flex justify-between items-center text-secondary text-sm mt-auto pt-4 border-t border-secondary">
+            <span className="text-gray-text">By {post.author || 'Admin'}</span>
+            <span className="text-gray-text">{formatDate(post.timestamp)}</span>
             <span className="flex items-center text-red-500">
               <FaHeart className="w-4 h-4 mr-1" />
               {post.likes || 0}

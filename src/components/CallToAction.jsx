@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const CallToAction = ({ title, description, buttonText, buttonLink, bgColor = 'bg-secondary', textColor = 'text-white' }) => {
+const CallToAction = ({ title, description, buttonText, buttonLink, bgColor = 'bg-primary', textColor = 'text-light-text' }) => {
   return (
     <section className={`${bgColor} ${textColor} py-16 px-4 text-center rounded-lg shadow-xl my-12`}>
       <div className="container mx-auto">
@@ -11,7 +11,7 @@ const CallToAction = ({ title, description, buttonText, buttonLink, bgColor = 'b
         </p>
         <Link
           to={buttonLink}
-          className="inline-block bg-accent text-dark font-bold text-xl py-4 px-10 rounded-full hover:bg-yellow-400 transition-all duration-300 transform hover:scale-105 shadow-lg"
+          className="inline-block bg-accent text-dark-background font-bold text-xl py-4 px-10 rounded-full hover:bg-cyan-400 transition-all duration-300 transform hover:scale-105 shadow-lg"
         >
           {buttonText}
         </Link>

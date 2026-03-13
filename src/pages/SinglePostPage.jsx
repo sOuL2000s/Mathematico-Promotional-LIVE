@@ -100,7 +100,7 @@ const SinglePostPage = () => {
 
   return (
     <div className="container mx-auto py-8 md:py-12 px-4 min-h-screen">
-      <div className="bg-white p-6 md:p-8 rounded-xl shadow-xl border border-gray-100 animate-fade-in-up">
+      <div className="bg-medium-dark p-6 md:p-8 rounded-xl shadow-xl border border-secondary animate-fade-in-up">
         {post.imageUrl && (
           <div className="w-full h-auto max-h-[500px] mb-6 md:mb-8 rounded-lg shadow-md overflow-hidden">
             {isVideo(post.imageUrl) ? (
@@ -116,25 +116,25 @@ const SinglePostPage = () => {
           </div>
         )}
         <span className="text-xs sm:text-sm text-primary font-semibold mb-2 md:mb-3 uppercase inline-block tracking-wide">{post.category}</span>
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-dark mb-3 md:mb-4 leading-tight">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-light-text mb-3 md:mb-4 leading-tight">
           {post.title}
         </h1>
-        <div className="text-gray-base text-xs sm:text-md mb-4 md:mb-6 flex items-center space-x-2 sm:space-x-4">
+        <div className="text-secondary text-xs sm:text-md mb-4 md:mb-6 flex items-center space-x-2 sm:space-x-4">
           <span>By {post.author || 'Admin'}</span>
           <span>&bull;</span>
           <span>{formatDate(post.timestamp)}</span>
         </div>
 
-        <div className="prose prose-sm sm:prose-lg max-w-none text-gray-800 leading-relaxed mb-6 md:mb-8">
+        <div className="prose prose-sm sm:prose-lg max-w-none text-light-text leading-relaxed mb-6 md:mb-8">
           {/* Using dangerouslySetInnerHTML for plain text, not for rich text editor output */}
-          <p className="text-gray-base">{post.content}</p>
+          <p className="text-secondary">{post.content}</p>
         </div>
 
         {/* Interaction Buttons */}
-        <div className="flex flex-wrap items-center space-x-4 sm:space-x-6 border-t border-b border-gray-200 py-3 md:py-4 mb-6 md:mb-8">
+        <div className="flex flex-wrap items-center space-x-4 sm:space-x-6 border-t border-b border-secondary py-3 md:py-4 mb-6 md:mb-8">
           <button
             onClick={handleLike}
-            className={`flex items-center space-x-1 sm:space-x-2 text-primary font-semibold hover:text-emerald-600 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base`}
+            className={`flex items-center space-x-1 sm:space-x-2 text-primary font-semibold hover:text-blue-600 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base`}
             disabled={likeLoading}
           >
             <FaHeart className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -142,7 +142,7 @@ const SinglePostPage = () => {
           </button>
           <button
             onClick={handleShare}
-            className="flex items-center space-x-1 sm:space-x-2 text-secondary font-semibold hover:text-blue-600 transition-colors duration-300 text-sm sm:text-base"
+            className="flex items-center space-x-1 sm:space-x-2 text-accent font-semibold hover:text-cyan-400 transition-colors duration-300 text-sm sm:text-base"
           >
             <FaShareAlt className="w-5 h-5 sm:w-6 sm:h-6" />
             <span>Share</span>
@@ -151,18 +151,18 @@ const SinglePostPage = () => {
 
         {/* Comments Section */}
         <div className="mt-8 md:mt-12">
-          <h2 className="text-2xl sm:text-3xl font-bold text-dark mb-4 md:mb-6">Comments ({comments.length})</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold text-light-text mb-4 md:mb-6">Comments ({comments.length})</h2>
           {comments.length === 0 ? (
-            <p className="text-gray-base text-base sm:text-lg">No comments yet. Be the first to share your thoughts!</p>
+            <p className="text-secondary text-base sm:text-lg">No comments yet. Be the first to share your thoughts!</p>
           ) : (
             <div className="space-y-4 md:space-y-6">
               {comments.map((comment, index) => (
-                <div key={comment.id} className="bg-gray-50 p-4 sm:p-5 rounded-lg border border-gray-200 animate-fade-in-up" style={{ animationDelay: `${index * 0.05}s` }}>
+                <div key={comment.id} className="bg-dark-background p-4 sm:p-5 rounded-lg border border-secondary animate-fade-in-up" style={{ animationDelay: `${index * 0.05}s` }}>
                   <div className="flex items-center mb-1 sm:mb-2">
-                    <p className="font-semibold text-dark mr-2 text-sm sm:text-base">{comment.commenterName || 'Anonymous'}</p>
-                    <span className="text-gray-500 text-xs sm:text-sm">&bull; {formatDate(comment.timestamp)}</span>
+                    <p className="font-semibold text-light-text mr-2 text-sm sm:text-base">{comment.commenterName || 'Anonymous'}</p>
+                    <span className="text-gray-text text-xs sm:text-sm">&bull; {formatDate(comment.timestamp)}</span>
                   </div>
-                  <p className="text-gray-base leading-relaxed text-sm sm:text-base">{comment.commentText}</p>
+                  <p className="text-secondary leading-relaxed text-sm sm:text-base">{comment.commentText}</p>
                 </div>
               ))}
             </div>

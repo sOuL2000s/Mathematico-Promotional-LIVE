@@ -152,14 +152,14 @@ const AdminDashboardPage = () => {
 
   return (
     <div className="container mx-auto py-8 md:py-12 px-4 min-h-screen">
-      <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-dark mb-8 md:mb-10 text-center animate-fade-in-up">Admin Dashboard</h1>
+      <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-light-text mb-8 md:mb-10 text-center animate-fade-in-up">Admin Dashboard</h1>
 
       {/* Post Management */}
-      <section className="bg-white p-6 md:p-8 rounded-xl shadow-lg border border-gray-100 mb-8 md:mb-12 animate-fade-in-up animation-delay-100">
+      <section className="bg-medium-dark p-6 md:p-8 rounded-xl shadow-lg border border-secondary mb-8 md:mb-12 animate-fade-in-up animation-delay-100">
         <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary mb-6 md:mb-8">Manage Posts</h2>
         <button
           onClick={() => setEditingPost(null)}
-          className="bg-secondary text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-600 transition-colors duration-300 mb-6 inline-flex items-center shadow-md hover:shadow-lg"
+          className="bg-primary text-light-text font-bold py-2 px-6 rounded-lg hover:bg-blue-600 transition-colors duration-300 mb-6 inline-flex items-center shadow-md hover:shadow-lg"
         >
           <FaPlusSquare className="mr-2" /> Create New Post
         </button>
@@ -170,49 +170,49 @@ const AdminDashboardPage = () => {
           onPostDeleted={handlePostDeleted}
         />
 
-        <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-dark mt-8 md:mt-12 mb-4 md:mb-6">Existing Posts</h3>
+        <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-light-text mt-8 md:mt-12 mb-4 md:mb-6">Existing Posts</h3>
         {errorPosts && <ErrorDisplay message={errorPosts} />}
         {loadingPosts ? (
           <LoadingSpinner />
         ) : (
-          <div className="overflow-x-auto bg-white rounded-lg shadow-sm border border-gray-100">
-            <table className="min-w-full bg-white table-auto border-collapse">
-              <thead className="bg-gray-100">
-                <tr className="text-dark uppercase text-xs sm:text-sm leading-normal">
-                  <th className="py-3 px-4 sm:px-6 text-left border-b border-gray-200">Title</th>
-                  <th className="py-3 px-4 sm:px-6 text-left border-b border-gray-200">Category</th>
-                  <th className="py-3 px-4 sm:px-6 text-center border-b border-gray-200">Likes</th>
-                  <th className="py-3 px-4 sm:px-6 text-center border-b border-gray-200">Date</th>
-                  <th className="py-3 px-4 sm:px-6 text-center border-b border-gray-200">Actions</th>
+          <div className="overflow-x-auto bg-medium-dark rounded-lg shadow-sm border border-secondary">
+            <table className="min-w-full bg-medium-dark table-auto border-collapse">
+              <thead className="bg-dark-background">
+                <tr className="text-light-text uppercase text-xs sm:text-sm leading-normal">
+                  <th className="py-3 px-4 sm:px-6 text-left border-b border-secondary">Title</th>
+                  <th className="py-3 px-4 sm:px-6 text-left border-b border-secondary">Category</th>
+                  <th className="py-3 px-4 sm:px-6 text-center border-b border-secondary">Likes</th>
+                  <th className="py-3 px-4 sm:px-6 text-center border-b border-secondary">Date</th>
+                  <th className="py-3 px-4 sm:px-6 text-center border-b border-secondary">Actions</th>
                 </tr>
               </thead>
-              <tbody className="text-gray-700 text-xs sm:text-sm font-light">
+              <tbody className="text-secondary text-xs sm:text-sm font-light">
                 {posts.length === 0 ? (
                   <tr>
-                    <td colSpan="5" className="py-4 text-center text-gray-base">No posts found.</td>
+                    <td colSpan="5" className="py-4 text-center text-gray-text">No posts found.</td>
                   </tr>
                 ) : (
                   posts.map((post) => (
-                    <tr key={post.id} className="border-b border-gray-200 hover:bg-gray-50 transition-colors duration-150">
+                    <tr key={post.id} className="border-b border-secondary hover:bg-dark-background transition-colors duration-150">
                       <td className="py-3 px-4 sm:px-6 text-left whitespace-nowrap">
-                        <span className="font-medium text-gray-800">{post.title}</span>
+                        <span className="font-medium text-light-text">{post.title}</span>
                       </td>
                       <td className="py-3 px-4 sm:px-6 text-left">
-                        <span className="bg-blue-100 text-blue-800 py-1 px-2 rounded-full text-xs font-semibold">{post.category}</span>
+                        <span className="bg-primary text-light-text py-1 px-2 rounded-full text-xs font-semibold">{post.category}</span>
                       </td>
                       <td className="py-3 px-4 sm:px-6 text-center">{post.likes || 0}</td>
-                      <td className="py-3 px-4 sm:px-6 text-center whitespace-nowrap text-gray-600">{formatDate(post.timestamp)}</td>
+                      <td className="py-3 px-4 sm:px-6 text-center whitespace-nowrap text-gray-text">{formatDate(post.timestamp)}</td>
                       <td className="py-3 px-4 sm:px-6 text-center">
                         <div className="flex flex-col sm:flex-row items-center justify-center space-y-1 sm:space-y-0 sm:space-x-2">
                           <button
                             onClick={() => setEditingPost(post)}
-                            className="bg-blue-500 text-white px-3 py-1.5 rounded-md hover:bg-blue-600 transition-colors text-xs inline-flex items-center"
+                            className="bg-primary text-light-text px-3 py-1.5 rounded-md hover:bg-blue-600 transition-colors text-xs inline-flex items-center"
                           >
                             <FaEdit className="mr-1" /> Edit
                           </button>
                           <button
                             onClick={() => handlePostDeleted(post.id)}
-                            className="bg-red-500 text-white px-3 py-1.5 rounded-md hover:bg-red-600 transition-colors text-xs inline-flex items-center"
+                            className="bg-red-500 text-light-text px-3 py-1.5 rounded-md hover:bg-red-600 transition-colors text-xs inline-flex items-center"
                           >
                             <FaTrash className="mr-1" /> Delete
                           </button>
@@ -228,39 +228,39 @@ const AdminDashboardPage = () => {
       </section>
 
       {/* Reviews Moderation */}
-      <section className="bg-white p-6 md:p-8 rounded-xl shadow-lg border border-gray-100 mb-8 md:mb-12 animate-fade-in-up animation-delay-200">
+      <section className="bg-medium-dark p-6 md:p-8 rounded-xl shadow-lg border border-secondary mb-8 md:mb-12 animate-fade-in-up animation-delay-200">
         <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary mb-6 md:mb-8">Moderate Reviews</h2>
         {errorReviews && <ErrorDisplay message={errorReviews} />}
         {loadingReviews ? (
           <LoadingSpinner />
         ) : (
-          <div className="overflow-x-auto bg-white rounded-lg shadow-sm border border-gray-100">
-            <table className="min-w-full bg-white table-auto border-collapse">
-              <thead className="bg-gray-100">
-                <tr className="text-dark uppercase text-xs sm:text-sm leading-normal">
-                  <th className="py-3 px-4 sm:px-6 text-left border-b border-gray-200">Reviewer</th>
-                  <th className="py-3 px-4 sm:px-6 text-left border-b border-gray-200">Rating</th>
-                  <th className="py-3 px-4 sm:px-6 text-left border-b border-gray-200">Feedback</th>
-                  <th className="py-3 px-4 sm:px-6 text-center border-b border-gray-200">Date</th>
-                  <th className="py-3 px-4 sm:px-6 text-center border-b border-gray-200">Actions</th>
+          <div className="overflow-x-auto bg-medium-dark rounded-lg shadow-sm border border-secondary">
+            <table className="min-w-full bg-medium-dark table-auto border-collapse">
+              <thead className="bg-dark-background">
+                <tr className="text-light-text uppercase text-xs sm:text-sm leading-normal">
+                  <th className="py-3 px-4 sm:px-6 text-left border-b border-secondary">Reviewer</th>
+                  <th className="py-3 px-4 sm:px-6 text-left border-b border-secondary">Rating</th>
+                  <th className="py-3 px-4 sm:px-6 text-left border-b border-secondary">Feedback</th>
+                  <th className="py-3 px-4 sm:px-6 text-center border-b border-secondary">Date</th>
+                  <th className="py-3 px-4 sm:px-6 text-center border-b border-secondary">Actions</th>
                 </tr>
               </thead>
-              <tbody className="text-gray-700 text-xs sm:text-sm font-light">
+              <tbody className="text-secondary text-xs sm:text-sm font-light">
                 {reviews.length === 0 ? (
                   <tr>
-                    <td colSpan="5" className="py-4 text-center text-gray-base">No reviews found.</td>
+                    <td colSpan="5" className="py-4 text-center text-gray-text">No reviews found.</td>
                   </tr>
                 ) : (
                   reviews.map((review) => (
-                    <tr key={review.id} className="border-b border-gray-200 hover:bg-gray-50 transition-colors duration-150">
-                      <td className="py-3 px-4 sm:px-6 text-left whitespace-nowrap text-gray-800">{review.reviewerName || 'Anonymous'}</td>
-                      <td className="py-3 px-4 sm:px-6 text-left text-gray-600">{review.rating}/5</td>
-                      <td className="py-3 px-4 sm:px-6 text-left max-w-[150px] sm:max-w-xs truncate text-gray-800">{review.feedbackText}</td>
-                      <td className="py-3 px-4 sm:px-6 text-center whitespace-nowrap text-gray-600">{formatDate(review.timestamp)}</td>
+                    <tr key={review.id} className="border-b border-secondary hover:bg-dark-background transition-colors duration-150">
+                      <td className="py-3 px-4 sm:px-6 text-left whitespace-nowrap text-light-text">{review.reviewerName || 'Anonymous'}</td>
+                      <td className="py-3 px-4 sm:px-6 text-left text-gray-text">{review.rating}/5</td>
+                      <td className="py-3 px-4 sm:px-6 text-left max-w-[150px] sm:max-w-xs truncate text-light-text">{review.feedbackText}</td>
+                      <td className="py-3 px-4 sm:px-6 text-center whitespace-nowrap text-gray-text">{formatDate(review.timestamp)}</td>
                       <td className="py-3 px-4 sm:px-6 text-center">
                         <button
                           onClick={() => handleDeleteReview(review.id)}
-                          className="bg-red-500 text-white px-3 py-1.5 rounded-md hover:bg-red-600 transition-colors text-xs inline-flex items-center"
+                          className="bg-red-500 text-light-text px-3 py-1.5 rounded-md hover:bg-red-600 transition-colors text-xs inline-flex items-center"
                         >
                           <FaTrash className="mr-1" /> Delete
                         </button>
@@ -275,43 +275,43 @@ const AdminDashboardPage = () => {
       </section>
 
       {/* Comments Moderation */}
-      <section className="bg-white p-6 md:p-8 rounded-xl shadow-lg border border-gray-100 animate-fade-in-up animation-delay-300">
+      <section className="bg-medium-dark p-6 md:p-8 rounded-xl shadow-lg border border-secondary animate-fade-in-up animation-delay-300">
         <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary mb-6 md:mb-8">Moderate Comments</h2>
         {errorComments && <ErrorDisplay message={errorComments} />}
         {loadingComments ? (
           <LoadingSpinner />
         ) : (
-          <div className="overflow-x-auto bg-white rounded-lg shadow-sm border border-gray-100">
-            <table className="min-w-full bg-white table-auto border-collapse">
-              <thead className="bg-gray-100">
-                <tr className="text-dark uppercase text-xs sm:text-sm leading-normal">
-                  <th className="py-3 px-4 sm:px-6 text-left border-b border-gray-200">Commenter</th>
-                  <th className="py-3 px-4 sm:px-6 text-left border-b border-gray-200">Comment</th>
-                  <th className="py-3 px-4 sm:px-6 text-left border-b border-gray-200">On Post</th>
-                  <th className="py-3 px-4 sm:px-6 text-center border-b border-gray-200">Date</th>
-                  <th className="py-3 px-4 sm:px-6 text-center border-b border-gray-200">Actions</th>
+          <div className="overflow-x-auto bg-medium-dark rounded-lg shadow-sm border border-secondary">
+            <table className="min-w-full bg-medium-dark table-auto border-collapse">
+              <thead className="bg-dark-background">
+                <tr className="text-light-text uppercase text-xs sm:text-sm leading-normal">
+                  <th className="py-3 px-4 sm:px-6 text-left border-b border-secondary">Commenter</th>
+                  <th className="py-3 px-4 sm:px-6 text-left border-b border-secondary">Comment</th>
+                  <th className="py-3 px-4 sm:px-6 text-left border-b border-secondary">On Post</th>
+                  <th className="py-3 px-4 sm:px-6 text-center border-b border-secondary">Date</th>
+                  <th className="py-3 px-4 sm:px-6 text-center border-b border-secondary">Actions</th>
                 </tr>
               </thead>
-              <tbody className="text-gray-700 text-xs sm:text-sm font-light">
+              <tbody className="text-secondary text-xs sm:text-sm font-light">
                 {comments.length === 0 ? (
                   <tr>
-                    <td colSpan="5" className="py-4 text-center text-gray-base">No comments found.</td>
+                    <td colSpan="5" className="py-4 text-center text-gray-text">No comments found.</td>
                   </tr>
                 ) : (
                   comments.map((comment) => (
-                    <tr key={comment.id} className="border-b border-gray-200 hover:bg-gray-50 transition-colors duration-150">
-                      <td className="py-3 px-4 sm:px-6 text-left whitespace-nowrap text-gray-800">{comment.commenterName || 'Anonymous'}</td>
-                      <td className="py-3 px-4 sm:px-6 text-left max-w-[150px] sm:max-w-xs truncate text-gray-800">{comment.commentText}</td>
+                    <tr key={comment.id} className="border-b border-secondary hover:bg-dark-background transition-colors duration-150">
+                      <td className="py-3 px-4 sm:px-6 text-left whitespace-nowrap text-light-text">{comment.commenterName || 'Anonymous'}</td>
+                      <td className="py-3 px-4 sm:px-6 text-left max-w-[150px] sm:max-w-xs truncate text-light-text">{comment.commentText}</td>
                       <td className="py-3 px-4 sm:px-6 text-left">
-                        <a href={`/posts/${comment.postId}`} className="text-secondary hover:underline text-xs sm:text-sm" target="_blank" rel="noopener noreferrer">
+                        <a href={`/posts/${comment.postId}`} className="text-accent hover:underline text-xs sm:text-sm" target="_blank" rel="noopener noreferrer">
                           {comment.postTitle || 'View Post'}
                         </a>
                       </td>
-                      <td className="py-3 px-4 sm:px-6 text-center whitespace-nowrap text-gray-600">{formatDate(comment.timestamp)}</td>
+                      <td className="py-3 px-4 sm:px-6 text-center whitespace-nowrap text-gray-text">{formatDate(comment.timestamp)}</td>
                       <td className="py-3 px-4 sm:px-6 text-center">
                         <button
                           onClick={() => handleDeleteComment(comment.postId, comment.id)}
-                          className="bg-red-500 text-white px-3 py-1.5 rounded-md hover:bg-red-600 transition-colors text-xs inline-flex items-center"
+                          className="bg-red-500 text-light-text px-3 py-1.5 rounded-md hover:bg-red-600 transition-colors text-xs inline-flex items-center"
                         >
                           <FaTrash className="mr-1" /> Delete
                         </button>

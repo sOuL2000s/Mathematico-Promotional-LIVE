@@ -12,13 +12,14 @@ module.exports = {
         mono: ['Space Mono', 'monospace'],
       },
       colors: {
-        // Updated for a sleeker, more modern aesthetic
-        primary: '#10B981', // Tailwind's emerald-500 for a fresh green
-        secondary: '#3B82F6', // Tailwind's blue-500 for a vibrant blue
-        accent: '#F59E0B', // Tailwind's amber-500 for a warm accent
-        dark: '#1F2937', // Tailwind's gray-800 for deep text and backgrounds
-        light: '#F9FAFB', // Tailwind's gray-50 for subtle light backgrounds
-        'gray-base': '#6B7280', // Tailwind's gray-500 for general text
+        // New color palette
+        'dark-background': '#1A1C25', // Deep Midnight Navy - Main page background
+        'medium-dark': '#2A2C35',     // Slightly lighter dark for card backgrounds
+        'primary': '#3D5A9E',         // Professional Royal Blue - Main brand color, buttons, highlights
+        'secondary': '#C0C2CE',       // Soft Steel Silver - Secondary elements, borders, subtle text
+        'accent': '#4CC9F0',          // Bright Electric Cyan - Accent highlights, interactive elements
+        'light-text': '#E5E7EB',      // Off-White / Pearl - Main text on dark backgrounds
+        'gray-text': '#8C8F9A',       // Mid-tone gray for less prominent text/placeholders
       },
       animation: {
         'fade-in-up': 'fadeInUp 0.6s ease-out forwards',

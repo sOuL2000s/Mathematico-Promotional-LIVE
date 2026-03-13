@@ -43,8 +43,8 @@ const PostsPage = () => {
 
   return (
     <div className="container mx-auto py-8 md:py-12 px-4 min-h-screen">
-      <h1 className="text-4xl sm:text-5xl font-bold text-dark mb-8 md:mb-10 text-center animate-fade-in-up">Our Latest Posts & Resources</h1>
-      <p className="text-base sm:text-xl text-gray-base text-center mb-8 md:mb-12 max-w-3xl mx-auto animate-fade-in-up animation-delay-100">
+      <h1 className="text-4xl sm:text-5xl font-bold text-light-text mb-8 md:mb-10 text-center animate-fade-in-up">Our Latest Posts & Resources</h1>
+      <p className="text-base sm:text-xl text-secondary text-center mb-8 md:mb-12 max-w-3xl mx-auto animate-fade-in-up animation-delay-100">
         Explore a wide range of mathematical topics, challenging problems, intriguing puzzles, and insightful articles from our experts.
       </p>
 
@@ -56,8 +56,8 @@ const PostsPage = () => {
             onClick={() => setSelectedCategory(cat)}
             className={`px-4 sm:px-6 py-1.5 sm:py-2.5 rounded-full text-sm sm:text-lg font-semibold transition-all duration-300 whitespace-nowrap
               ${selectedCategory === cat
-                ? 'bg-primary text-white shadow-md hover:bg-emerald-600'
-                : 'bg-gray-200 text-dark hover:bg-gray-300'
+                ? 'bg-accent text-dark-background shadow-md hover:bg-cyan-400'
+                : 'bg-secondary text-dark-background hover:bg-light-text'
               }`}
           >
             {cat.charAt(0).toUpperCase() + cat.slice(1)}
@@ -69,7 +69,7 @@ const PostsPage = () => {
       {error && <ErrorDisplay message={error} />}
 
       {!loading && posts.length === 0 && !error && (
-        <p className="text-center text-gray-base text-base sm:text-xl mt-8 animate-fade-in">No posts found for this category.</p>
+        <p className="text-center text-secondary text-base sm:text-xl mt-8 animate-fade-in">No posts found for this category.</p>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">

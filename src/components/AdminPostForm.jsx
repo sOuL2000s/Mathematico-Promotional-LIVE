@@ -205,18 +205,18 @@ const AdminPostForm = ({ post = null, onPostSaved, onPostDeleted }) => {
 
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
-      <h3 className="text-2xl font-bold mb-6 text-dark">{post ? 'Edit Post' : 'Create New Post'}</h3>
+    <div className="bg-medium-dark p-6 rounded-xl shadow-lg border border-secondary">
+      <h3 className="text-2xl font-bold mb-6 text-light-text">{post ? 'Edit Post' : 'Create New Post'}</h3>
       {error && <ErrorDisplay message={error} />}
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
-          <label htmlFor="title" className="block text-gray-700 text-sm font-semibold mb-2">
+          <label htmlFor="title" className="block text-secondary text-sm font-semibold mb-2">
             Title <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
             id="title"
-            className="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+            className="shadow-sm appearance-none border border-secondary rounded-lg w-full py-2 px-3 bg-dark-background text-light-text leading-tight focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
@@ -224,13 +224,13 @@ const AdminPostForm = ({ post = null, onPostSaved, onPostDeleted }) => {
           />
         </div>
         <div className="mb-4">
-          <label htmlFor="content" className="block text-gray-700 text-sm font-semibold mb-2">
+          <label htmlFor="content" className="block text-secondary text-sm font-semibold mb-2">
             Content <span className="text-red-500">*</span>
           </label>
           <textarea
             id="content"
             rows="8"
-            className="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-y transition-all duration-200"
+            className="shadow-sm appearance-none border border-secondary rounded-lg w-full py-2 px-3 bg-dark-background text-light-text leading-tight focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-y transition-all duration-200"
             value={content}
             onChange={(e) => setContent(e.target.value)}
             required
@@ -238,12 +238,12 @@ const AdminPostForm = ({ post = null, onPostSaved, onPostDeleted }) => {
           ></textarea>
         </div>
         <div className="mb-4">
-          <label htmlFor="category" className="block text-gray-700 text-sm font-semibold mb-2">
+          <label htmlFor="category" className="block text-secondary text-sm font-semibold mb-2">
             Category
           </label>
           <select
             id="category"
-            className="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+            className="shadow-sm appearance-none border border-secondary rounded-lg w-full py-2 px-3 bg-dark-background text-light-text leading-tight focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             disabled={loading}
@@ -257,25 +257,25 @@ const AdminPostForm = ({ post = null, onPostSaved, onPostDeleted }) => {
         </div>
         {/* Replaced imageUrl input with file input and preview */}
         <div className="mb-6">
-          <label htmlFor="fileUpload" className="block text-gray-700 text-sm font-semibold mb-2">
+          <label htmlFor="fileUpload" className="block text-secondary text-sm font-semibold mb-2">
             Upload Image/Video (Optional)
           </label>
           <input
             type="file"
             id="fileUpload"
-            className="block w-full text-sm text-gray-500
+            className="block w-full text-sm text-secondary
                        file:mr-4 file:py-2 file:px-4
                        file:rounded-full file:border-0
                        file:text-sm file:font-semibold
-                       file:bg-primary file:text-white
-                       hover:file:bg-emerald-600
+                       file:bg-primary file:text-light-text
+                       hover:file:bg-blue-600
                        disabled:opacity-50 disabled:cursor-not-allowed"
             onChange={handleFileChange}
             accept="image/*,video/*" // Accept both image and video files
             disabled={loading}
           />
           {previewUrl && (
-            <div className="mt-4 relative w-64 h-auto max-w-full overflow-hidden rounded-lg shadow-md border border-gray-200">
+            <div className="mt-4 relative w-64 h-auto max-w-full overflow-hidden rounded-lg shadow-md border border-secondary">
               {isVideo(previewUrl) ? (
                 <video src={previewUrl} controls className="w-full h-auto object-cover max-h-48"></video>
               ) : (
@@ -284,7 +284,7 @@ const AdminPostForm = ({ post = null, onPostSaved, onPostDeleted }) => {
               <button
                 type="button"
                 onClick={clearMedia}
-                className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 text-xs leading-none z-10 hover:bg-red-600 transition-colors flex items-center justify-center w-5 h-5"
+                className="absolute top-1 right-1 bg-red-500 text-light-text rounded-full p-1 text-xs leading-none z-10 hover:bg-red-600 transition-colors flex items-center justify-center w-5 h-5"
                 title="Remove image/video"
                 disabled={loading}
               >
@@ -293,16 +293,16 @@ const AdminPostForm = ({ post = null, onPostSaved, onPostDeleted }) => {
             </div>
           )}
           {loading && uploadProgress > 0 && uploadProgress < 100 && (
-            <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mt-2">
+            <div className="w-full bg-dark-background rounded-full h-2.5 dark:bg-gray-700 mt-2">
               <div className="bg-primary h-2.5 rounded-full" style={{ width: `${uploadProgress}%` }}></div>
-              <span className="text-xs text-gray-600 ml-2">{uploadProgress}% uploaded</span>
+              <span className="text-xs text-secondary ml-2">{uploadProgress}% uploaded</span>
             </div>
           )}
         </div>
         <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0 sm:space-x-4">
           <button
             type="submit"
-            className="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-emerald-600 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+            className="bg-primary text-light-text font-bold py-2 px-6 rounded-lg hover:bg-blue-600 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
             disabled={loading}
           >
             {loading ? <LoadingSpinner /> : (post ? 'Update Post' : 'Create Post')}
@@ -311,7 +311,7 @@ const AdminPostForm = ({ post = null, onPostSaved, onPostDeleted }) => {
             <button
               type="button"
               onClick={handleDelete}
-              className="bg-red-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-700 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+              className="bg-red-600 text-light-text font-bold py-2 px-6 rounded-lg hover:bg-red-700 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
               disabled={loading}
             >
               {loading ? <LoadingSpinner /> : 'Delete Post'}
