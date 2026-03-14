@@ -56,11 +56,11 @@ const CoursesPage = () => {
         <p className="text-center text-secondary text-base sm:text-xl mt-8 animate-fade-in">No courses available at the moment.</p>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
         {courses.map((course, index) => {
           const CourseIcon = iconsMap[course.level] || FaBookOpen; // Default icon if level not mapped
           return (
-            <div key={course.id} className="bg-medium-dark rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-secondary flex flex-col animate-fade-in-up" style={{ animationDelay: `${index * 0.1}s` }}>
+            <div key={course.id} className="group bg-medium-dark rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-secondary flex flex-col animate-fade-in-up transform hover:-translate-y-2 hover:border-accent" style={{ animationDelay: `${index * 0.1}s` }}>
               {course.imageUrl && <img src={course.imageUrl} alt={course.title} className="w-full h-48 sm:h-56 object-cover object-center group-hover:scale-105 transition-transform duration-300" />}
               <div className="p-4 sm:p-6 flex flex-col flex-grow">
                 <div className="flex items-center mb-2 sm:mb-3">
@@ -88,7 +88,7 @@ const CoursesPage = () => {
             </div>
           );
         })}
-      </div>
+      </section>
 
       <section className="bg-primary text-light-text p-6 md:p-8 rounded-xl shadow-xl mt-8 md:mt-16 text-center animate-fade-in-up animation-delay-400">
         <h2 className="text-2xl sm:text-3xl font-bold mb-3 md:mb-4">Not sure which course is right for you?</h2>

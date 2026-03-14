@@ -45,6 +45,10 @@ const AdminCourseForm = ({ course = null, onCourseSaved, onCourseDeleted }) => {
       setButtonText('');
       setButtonLink('');
       setUploadProgress(0);
+      // Explicitly clear file input element when switching to create mode
+      if (document.getElementById('courseFileUpload')) {
+        document.getElementById('courseFileUpload').value = '';
+      }
     }
   }, [course]);
 
@@ -171,17 +175,31 @@ const AdminCourseForm = ({ course = null, onCourseSaved, onCourseDeleted }) => {
         alert('Course created successfully!');
       }
       onCourseSaved();
+      // Clear form fields after successful submission if creating a new course
+      // or if the parent component's `editingCourse` state is explicitly set to null (create mode).
+      // If `course` is null, it means we were in "create new course" mode.
+      if (!course) {
+        setTitle('');
+        setDescription('');
+        setFeatures([]);
+        setNewFeature('');
+        setLevel('Beginner');
+        setButtonText('');
+        setButtonLink('');
+        setFileToUpload(null);
+        setPreviewUrl('');
+        if (document.getElementById('courseFileUpload')) {
+          document.getElementById('courseFileUpload').value = '';
+        }
+      }
     } catch (err) {
       console.error("Error saving course: ", err);
       setError(`Failed to ${course ? 'update' : 'create'} course: ${err.message}`);
     } finally {
       setLoading(false);
       setUploadProgress(0);
-      setFileToUpload(null);
-      setPreviewUrl('');
-      if (document.getElementById('courseFileUpload')) {
-        document.getElementById('courseFileUpload').value = '';
-      }
+      // Rely on the useEffect to reset the form state when 'course' prop changes (e.g., to null for new creation)
+      // or to re-render with updated 'course' data after successful edit.
     }
   };
 
@@ -256,7 +274,7 @@ const AdminCourseForm = ({ course = null, onCourseSaved, onCourseDeleted }) => {
               </span>
             ))}
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <input
               type="text"
               className="shadow-sm appearance-none border border-secondary rounded-lg flex-grow py-2 px-3 bg-dark-background text-light-text leading-tight focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
@@ -274,7 +292,7 @@ const AdminCourseForm = ({ course = null, onCourseSaved, onCourseDeleted }) => {
             <button
               type="button"
               onClick={handleAddFeature}
-              className="bg-accent text-dark-background font-semibold py-2 px-4 rounded-lg hover:bg-cyan-400 transition-colors duration-300 disabled:opacity-50"
+              className="bg-accent text-dark-background font-semibold py-2 px-4 rounded-lg hover:bg-cyan-400 transition-colors duration-300 disabled:opacity-50 w-full sm:w-auto"
               disabled={loading}
             >
               Add

@@ -11,6 +11,7 @@ const AdminPostsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editingPost, setEditingPost] = useState(null); // null for create, post object for edit
+  const [formKey, setFormKey] = useState(0); // Key to force remount of AdminPostForm for reset
 
     const formatDate = (timestamp) => {
     if (!timestamp) return 'N/A';
@@ -69,13 +70,23 @@ const AdminPostsPage = () => {
       <section className="bg-medium-dark p-6 md:p-8 rounded-xl shadow-lg border border-secondary mb-8 md:mb-12 animate-fade-in-up animation-delay-100">
         <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-6 md:mb-8">{editingPost ? 'Edit Post' : 'Create New Post'}</h2>
         <button
-          onClick={() => setEditingPost(null)}
+          onClick={() => {
+            if (editingPost === null) {
+              // If already in create mode, increment key to force remount and reset the form
+              setFormKey(prevKey => prevKey + 1);
+            } else {
+              // If in edit mode, switch to create mode, which will naturally reset via useEffect
+              setEditingPost(null);
+              setFormKey(prevKey => prevKey + 1); // Also increment key to ensure a fresh form instance
+            }
+          }}
           className="bg-primary text-light-text font-bold py-2 px-6 rounded-lg hover:bg-blue-600 transition-colors duration-300 mb-6 inline-flex items-center shadow-md hover:shadow-lg"
         >
           <FaPlusSquare className="mr-2" /> {editingPost ? 'Cancel Edit / Create New' : 'Create New Post'}
         </button>
 
         <AdminPostForm
+          key={formKey} // Use key prop to force remount and reset when needed
           post={editingPost}
           onPostSaved={handlePostSaved}
           onPostDeleted={handlePostDeleted}

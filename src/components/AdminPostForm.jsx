@@ -41,6 +41,10 @@ const AdminPostForm = ({ post = null, onPostSaved, onPostDeleted }) => {
       setFileToUpload(null);
       setPreviewUrl('');
       setUploadProgress(0);
+      // Explicitly clear file input element when switching to create mode
+      if (document.getElementById('fileUpload')) {
+        document.getElementById('fileUpload').value = '';
+      }
     }
   }, [post, CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET]); // Added dependencies for CLOUDINARY variables
 
@@ -162,17 +166,26 @@ const AdminPostForm = ({ post = null, onPostSaved, onPostDeleted }) => {
         alert('Post created successfully!');
       }
       onPostSaved(); // Notify parent to refresh list or clear form
+      // Clear form fields after successful submission if creating a new post
+      // or if the parent component's `editingPost` state is explicitly set to null (create mode).
+      if (!post) {
+        setTitle('');
+        setContent('');
+        setCategory(categories[0]);
+        setFileToUpload(null);
+        setPreviewUrl('');
+        if (document.getElementById('fileUpload')) {
+          document.getElementById('fileUpload').value = '';
+        }
+      }
     } catch (err) {
       console.error("Error saving post: ", err);
       setError(`Failed to ${post ? 'update' : 'create'} post: ${err.message}`);
     } finally {
       setLoading(false);
       setUploadProgress(0); // Reset progress
-      setFileToUpload(null); // Clear file input state
-      setPreviewUrl(''); // Clear preview
-      if (document.getElementById('fileUpload')) {
-        document.getElementById('fileUpload').value = ''; // Clear file input field
-      }
+      // Rely on the useEffect to reset the form state when 'post' prop changes (e.g., to null for new creation)
+      // or to re-render with updated 'post' data after successful edit.
     }
   };
 

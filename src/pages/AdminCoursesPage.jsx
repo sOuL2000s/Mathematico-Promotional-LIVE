@@ -11,6 +11,7 @@ const AdminCoursesPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editingCourse, setEditingCourse] = useState(null); // null for create, course object for edit
+  const [formKey, setFormKey] = useState(0); // Key to force remount of AdminCourseForm for reset
 
     const formatDate = (timestamp) => {
     if (!timestamp) return 'N/A';
@@ -69,13 +70,23 @@ const AdminCoursesPage = () => {
       <section className="bg-medium-dark p-6 md:p-8 rounded-xl shadow-lg border border-secondary mb-8 md:mb-12 animate-fade-in-up animation-delay-100">
         <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-6 md:mb-8">{editingCourse ? 'Edit Course' : 'Create New Course'}</h2>
         <button
-          onClick={() => setEditingCourse(null)}
+          onClick={() => {
+            if (editingCourse === null) {
+              // If already in create mode, increment key to force remount and reset the form
+              setFormKey(prevKey => prevKey + 1);
+            } else {
+              // If in edit mode, switch to create mode, which will naturally reset via useEffect
+              setEditingCourse(null);
+              setFormKey(prevKey => prevKey + 1); // Also increment key to ensure a fresh form instance
+            }
+          }}
           className="bg-primary text-light-text font-bold py-2 px-6 rounded-lg hover:bg-blue-600 transition-colors duration-300 mb-6 inline-flex items-center shadow-md hover:shadow-lg"
         >
           <FaPlusSquare className="mr-2" /> {editingCourse ? 'Cancel Edit / Create New' : 'Create New Course'}
         </button>
 
         <AdminCourseForm
+          key={formKey} // Use key prop to force remount and reset when needed
           course={editingCourse}
           onCourseSaved={handleCourseSaved}
           onCourseDeleted={handleCourseDeleted}
