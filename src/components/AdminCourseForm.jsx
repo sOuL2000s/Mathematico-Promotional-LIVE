@@ -4,6 +4,7 @@ import { collection, addDoc, doc, updateDoc, deleteDoc, Timestamp } from 'fireba
 import ErrorDisplay from './ErrorDisplay';
 import LoadingSpinner from './LoadingSpinner';
 import { FaTimes } from 'react-icons/fa'; // Import the close icon
+import { MdOutlinePublic, MdCode } from 'react-icons/md'; // Import new icons
 
 const courseCategories = ['Algebra', 'Geometry', 'Calculus', 'Competitive', 'Foundational', 'Advanced Topics'];
 
@@ -16,6 +17,7 @@ const AdminCourseForm = ({ course = null, onCourseSaved, onCourseDeleted }) => {
   const [category, setCategory] = useState(courseCategories[0]); // New state for category
   const [fileToUpload, setFileToUpload] = useState(null); // Stores the actual file object
   const [previewUrl, setPreviewUrl] = useState(''); // Stores URL for preview (local or existing Cloudinary URL)
+  const [useCustomEnrollButton, setUseCustomEnrollButton] = useState(false); // New state: default or custom enroll button
   const [buttonText, setButtonText] = useState('');
   const [buttonLink, setButtonLink] = useState('');
   const [loading, setLoading] = useState(false);
@@ -33,6 +35,7 @@ const AdminCourseForm = ({ course = null, onCourseSaved, onCourseDeleted }) => {
       setLevel(course.level || 'Beginner');
       setCategory(course.category || courseCategories[0]); // Set category from course data
       setPreviewUrl(course.imageUrl || '');
+      setUseCustomEnrollButton(course.useCustomEnrollButton || false); // Load custom button preference
       setButtonText(course.buttonText || '');
       setButtonLink(course.buttonLink || '');
       setFileToUpload(null);
@@ -47,6 +50,7 @@ const AdminCourseForm = ({ course = null, onCourseSaved, onCourseDeleted }) => {
       setCategory(courseCategories[0]); // Reset category for new course
       setFileToUpload(null);
       setPreviewUrl('');
+      setUseCustomEnrollButton(false); // Reset to default
       setButtonText('');
       setButtonLink('');
       setUploadProgress(0);
@@ -164,8 +168,9 @@ const AdminCourseForm = ({ course = null, onCourseSaved, onCourseDeleted }) => {
         level: level,
         category: category, // Add category to course data
         imageUrl: finalImageUrl,
-        buttonText: buttonText.trim(),
-        buttonLink: buttonLink.trim(),
+        useCustomEnrollButton: useCustomEnrollButton, // Save custom button preference
+        buttonText: useCustomEnrollButton ? buttonText.trim() : '', // Clear if not custom
+        buttonLink: useCustomEnrollButton ? buttonLink.trim() : '', // Clear if not custom
         lastUpdated: Timestamp.now(),
       };
 
@@ -190,6 +195,7 @@ const AdminCourseForm = ({ course = null, onCourseSaved, onCourseDeleted }) => {
         setFeatures([]);
         setNewFeature('');
         setLevel('Beginner');
+        setUseCustomEnrollButton(false);
         setButtonText('');
         setButtonLink('');
         setFileToUpload(null);
@@ -341,34 +347,79 @@ const AdminCourseForm = ({ course = null, onCourseSaved, onCourseDeleted }) => {
             ))}
           </select>
         </div>
-        <div className="mb-4">
-          <label htmlFor="buttonText" className="block text-secondary text-sm font-semibold mb-2">
-            Enroll Button Text (Optional)
+
+        {/* Enroll Button Type Selector */}
+        <div className="mb-4 bg-dark-background p-4 rounded-lg border border-secondary">
+          <label className="block text-primary text-sm font-semibold mb-3">
+            Enroll Button Type
           </label>
-          <input
-            type="text"
-            id="buttonText"
-            className="shadow-sm appearance-none border border-secondary rounded-lg w-full py-2 px-3 bg-dark-background text-light-text leading-tight focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
-            value={buttonText}
-            onChange={(e) => setButtonText(e.target.value)}
-            placeholder="e.g., Enroll Now"
-            disabled={loading}
-          />
+          <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
+            <label className="flex items-center text-light-text cursor-pointer">
+              <input
+                type="radio"
+                name="enrollButtonType"
+                value="default"
+                checked={!useCustomEnrollButton}
+                onChange={() => setUseCustomEnrollButton(false)}
+                className="form-radio h-4 w-4 text-accent border-gray-text focus:ring-accent"
+                disabled={loading}
+              />
+              <span className="ml-2 flex items-center text-sm sm:text-base">
+                <MdOutlinePublic className="mr-1" /> Default (WhatsApp Inquiry)
+              </span>
+            </label>
+            <label className="flex items-center text-light-text cursor-pointer">
+              <input
+                type="radio"
+                name="enrollButtonType"
+                value="custom"
+                checked={useCustomEnrollButton}
+                onChange={() => setUseCustomEnrollButton(true)}
+                className="form-radio h-4 w-4 text-accent border-gray-text focus:ring-accent"
+                disabled={loading}
+              />
+              <span className="ml-2 flex items-center text-sm sm:text-base">
+                <MdCode className="mr-1" /> Custom Link
+              </span>
+            </label>
+          </div>
         </div>
-        <div className="mb-6">
-          <label htmlFor="buttonLink" className="block text-secondary text-sm font-semibold mb-2">
-            Enroll Button Link (Optional)
-          </label>
-          <input
-            type="url"
-            id="buttonLink"
-            className="shadow-sm appearance-none border border-secondary rounded-lg w-full py-2 px-3 bg-dark-background text-light-text leading-tight focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
-            value={buttonLink}
-            onChange={(e) => setButtonLink(e.target.value)}
-            placeholder="e.g., https://example.com/enroll"
-            disabled={loading}
-          />
-        </div>
+
+        {/* Custom Enroll Button Fields (conditionally rendered) */}
+        {useCustomEnrollButton && (
+          <>
+            <div className="mb-4">
+              <label htmlFor="buttonText" className="block text-secondary text-sm font-semibold mb-2">
+                Custom Enroll Button Text <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="buttonText"
+                className="shadow-sm appearance-none border border-secondary rounded-lg w-full py-2 px-3 bg-dark-background text-light-text leading-tight focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                value={buttonText}
+                onChange={(e) => setButtonText(e.target.value)}
+                placeholder="e.g., Enroll Now"
+                required={useCustomEnrollButton}
+                disabled={loading}
+              />
+            </div>
+            <div className="mb-6">
+              <label htmlFor="buttonLink" className="block text-secondary text-sm font-semibold mb-2">
+                Custom Enroll Button Link <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="url"
+                id="buttonLink"
+                className="shadow-sm appearance-none border border-secondary rounded-lg w-full py-2 px-3 bg-dark-background text-light-text leading-tight focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                value={buttonLink}
+                onChange={(e) => setButtonLink(e.target.value)}
+                placeholder="e.g., https://example.com/enroll"
+                required={useCustomEnrollButton}
+                disabled={loading}
+              />
+            </div>
+          </>
+        )}
         {/* File upload and preview */}
         <div className="mb-6">
           <label htmlFor="courseFileUpload" className="block text-secondary text-sm font-semibold mb-2">

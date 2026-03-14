@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaWhatsapp, FaTimes } from 'react-icons/fa'; // Import WhatsApp and close icons
 import LoadingSpinner from './LoadingSpinner'; // Assuming you have a LoadingSpinner component
+import { useWhatsApp } from '../context/WhatsAppContext'; // Import useWhatsApp context
 
 const WhatsAppButton = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { isModalOpen, closeModal, initialFormData, openModal } = useWhatsApp(); // Use context for modal state
   const [userName, setUserName] = useState('');
   const [userEmail, setUserEmail] = useState('');
   const [userSubject, setUserSubject] = useState('');
@@ -11,21 +12,45 @@ const WhatsAppButton = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const phoneNumber = '919051089673'; // Replace with your actual WhatsApp number, including country code
+  const phoneNumber = '919748559613'; // Mathematico's WhatsApp number
 
-  const handleOpenModal = () => {
-    setIsModalOpen(true);
-    // Reset form fields when opening the modal
-    setUserName('');
-    setUserEmail('');
-    setUserSubject('');
-    setUserMessage('');
-    setError(null);
-  };
+  const [userContactNumber, setUserContactNumber] = useState('');
+  const [userGrade, setUserGrade] = useState('');
+  const [userBoard, setUserBoard] = useState('');
+  const [userInterest, setUserInterest] = useState('');
+  const [userPreference, setUserPreference] = useState(''); // e.g., Online, Offline, Hybrid
+
+  // Effect to populate form fields if initialFormData is provided from context
+  useEffect(() => {
+    if (isModalOpen && initialFormData) {
+      setUserName(initialFormData.userName || '');
+      setUserEmail(initialFormData.userEmail || '');
+      setUserContactNumber(initialFormData.userContactNumber || '');
+      setUserGrade(initialFormData.userGrade || '');
+      setUserBoard(initialFormData.userBoard || '');
+      setUserInterest(initialFormData.userInterest || '');
+      setUserPreference(initialFormData.userPreference || '');
+      setUserSubject(initialFormData.subject || ''); // Pre-fill subject
+      setUserMessage(initialFormData.message || '');
+      setError(null);
+    } else if (!isModalOpen) {
+      // Reset form fields when modal closes or when it's just opening without initial data
+      setUserName('');
+      setUserEmail('');
+      setUserContactNumber('');
+      setUserGrade('');
+      setUserBoard('');
+      setUserInterest('');
+      setUserPreference('');
+      setUserSubject('');
+      setUserMessage('');
+      setError(null);
+    }
+  }, [isModalOpen, initialFormData]);
 
   const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setError(null);
+    closeModal(); // Use context's closeModal
+    setError(null); // Clear errors
   };
 
   const handleSubmit = (e) => {
@@ -33,21 +58,32 @@ const WhatsAppButton = () => {
     setLoading(true);
     setError(null);
 
-    if (!userName.trim() || !userEmail.trim() || !userSubject.trim() || !userMessage.trim()) {
-      setError("Please fill in all fields.");
+    // Basic validation: Name, Email, Subject, Message, and Contact Number are required
+    if (!userName.trim() || !userEmail.trim() || !userSubject.trim() || !userMessage.trim() || !userContactNumber.trim()) {
+      setError("Please fill in all *required fields.");
       setLoading(false);
       return;
     }
 
     // Construct the WhatsApp message with all details
     const formattedMessage = `
-*Mathematico Inquiry*
+🌟 *New Inquiry from Mathematico Website!* 🌟
 ---
+*🧑‍🎓 Student Details:*
 *Name:* ${userName.trim()}
 *Email:* ${userEmail.trim()}
+*Contact No.:* ${userContactNumber.trim()}
+*Grade/Class:* ${userGrade.trim() || 'Not specified'}
+*Academic Board:* ${userBoard.trim() || 'Not specified'}
+*Area of Interest:* ${userInterest.trim() || 'Not specified'}
+*Coaching Preference:* ${userPreference.trim() || 'Not specified'}
+
+*📝 Message Details:*
 *Subject:* ${userSubject.trim()}
-*Message:* ${userMessage.trim()}
+*Message:*
+${userMessage.trim()}
 ---
+_Looking forward to assisting them!_
 `;
 
     const encodedMessage = encodeURIComponent(formattedMessage);
@@ -66,17 +102,34 @@ const WhatsAppButton = () => {
 
   return (
     <>
-      <button
-        onClick={handleOpenModal}
-        className="fixed bottom-6 right-6 bg-accent text-dark-background p-4 rounded-full shadow-lg hover:scale-110 transition-all duration-300 ease-in-out z-50 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-dark-background group"
-        aria-label="Contact us via WhatsApp"
-      >
-        <FaWhatsapp className="w-8 h-8 group-hover:animate-pulse" />
-      </button>
+      {/* The floating button to open the WhatsApp modal */}
+      {!isModalOpen && (
+        <button
+          onClick={() => {
+            // Only open if the modal isn't already open
+            if (!isModalOpen) openModal({
+              subject: '',
+              message: '',
+              userName: '',
+              userEmail: '',
+              userContactNumber: '',
+              userGrade: '',
+              userBoard: '',
+              userInterest: '',
+              userPreference: ''
+            });
+          }} // Pass empty data to effectively open with blank form
+          className="fixed bottom-6 right-6 bg-accent text-dark-background p-4 rounded-full shadow-lg hover:scale-110 transition-all duration-300 ease-in-out z-50 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-dark-background group"
+          aria-label="Contact us via WhatsApp"
+        >
+          <FaWhatsapp className="w-8 h-8 group-hover:animate-pulse" />
+        </button>
+      )}
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-[9999] animate-fade-in">
-          <div className="bg-medium-dark p-6 sm:p-8 rounded-xl shadow-2xl w-full max-w-md border border-secondary relative animate-fade-in-up">
+          {/* Modal content container with max-height and scrollability */}
+          <div className="bg-medium-dark p-6 sm:p-8 rounded-xl shadow-2xl w-full max-w-md border border-secondary relative animate-fade-in-up max-h-[90vh] overflow-y-auto">
             <button
               onClick={handleCloseModal}
               className="absolute top-4 right-4 text-secondary hover:text-light-text transition-colors duration-200"
@@ -127,14 +180,88 @@ const WhatsAppButton = () => {
                 />
               </div>
               <div>
+                <label htmlFor="whatsappContactNumber" className="block text-secondary text-sm font-semibold mb-1">
+                  Your Contact Number <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="tel" // Use type="tel" for phone numbers
+                  id="whatsappContactNumber"
+                  className="shadow-sm appearance-none border border-secondary rounded-lg w-full py-2 px-3 bg-dark-background text-light-text leading-tight focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-200 text-sm"
+                  placeholder="e.g., +919876543210"
+                  value={userContactNumber}
+                  onChange={(e) => setUserContactNumber(e.target.value)}
+                  required
+                  disabled={loading}
+                />
+              </div>
+              <div>
+                <label htmlFor="whatsappGrade" className="block text-secondary text-sm font-semibold mb-1">
+                  Student's Grade/Class (Optional)
+                </label>
+                <input
+                  type="text"
+                  id="whatsappGrade"
+                  className="shadow-sm appearance-none border border-secondary rounded-lg w-full py-2 px-3 bg-dark-background text-light-text leading-tight focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-200 text-sm"
+                  placeholder="e.g., Class 10, JEE Aspirant"
+                  value={userGrade}
+                  onChange={(e) => setUserGrade(e.target.value)}
+                  disabled={loading}
+                />
+              </div>
+              <div>
+                <label htmlFor="whatsappBoard" className="block text-secondary text-sm font-semibold mb-1">
+                  Academic Board/Curriculum (Optional)
+                </label>
+                <input
+                  type="text"
+                  id="whatsappBoard"
+                  className="shadow-sm appearance-none border border-secondary rounded-lg w-full py-2 px-3 bg-dark-background text-light-text leading-tight focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-200 text-sm"
+                  placeholder="e.g., CBSE, ICSE, State Board"
+                  value={userBoard}
+                  onChange={(e) => setUserBoard(e.target.value)}
+                  disabled={loading}
+                />
+              </div>
+              <div>
+                <label htmlFor="whatsappInterest" className="block text-secondary text-sm font-semibold mb-1">
+                  Specific Course/Topic of Interest (Optional)
+                </label>
+                <input
+                  type="text"
+                  id="whatsappInterest"
+                  className="shadow-sm appearance-none border border-secondary rounded-lg w-full py-2 px-3 bg-dark-background text-light-text leading-tight focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-200 text-sm"
+                  placeholder="e.g., Calculus, Algebra, Competitive Math"
+                  value={userInterest}
+                  onChange={(e) => setUserInterest(e.target.value)}
+                  disabled={loading}
+                />
+              </div>
+              <div>
+                <label htmlFor="whatsappPreference" className="block text-secondary text-sm font-semibold mb-1">
+                  Preferred Coaching Mode (Optional)
+                </label>
+                <select
+                  id="whatsappPreference"
+                  className="shadow-sm appearance-none border border-secondary rounded-lg w-full py-2 px-3 bg-dark-background text-light-text leading-tight focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-200 text-sm"
+                  value={userPreference}
+                  onChange={(e) => setUserPreference(e.target.value)}
+                  disabled={loading}
+                >
+                  <option value="">Select a preference</option>
+                  <option value="Online">Online Coaching</option>
+                  <option value="Offline">Offline Coaching (Center Visit)</option>
+                  <option value="Hybrid">Hybrid (Both Online & Offline)</option>
+                </select>
+              </div>
+              <div>
                 <label htmlFor="whatsappSubject" className="block text-secondary text-sm font-semibold mb-1">
-                  Subject <span className="text-red-500">*</span>
+                  Subject of Inquiry <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   id="whatsappSubject"
                   className="shadow-sm appearance-none border border-secondary rounded-lg w-full py-2 px-3 bg-dark-background text-light-text leading-tight focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-200 text-sm"
-                  placeholder="Inquiry about courses/app"
+                  placeholder="e.g., Inquiry about courses/app"
                   value={userSubject}
                   onChange={(e) => setUserSubject(e.target.value)}
                   required
@@ -143,7 +270,7 @@ const WhatsAppButton = () => {
               </div>
               <div>
                 <label htmlFor="whatsappMessage" className="block text-secondary text-sm font-semibold mb-1">
-                  Your Message <span className="text-red-500">*</span>
+                  Your Detailed Message <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   id="whatsappMessage"

@@ -4,7 +4,8 @@ import { db } from '../firebase';
 import { collection, query, orderBy, getDocs, where } from 'firebase/firestore'; // Added 'where'
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorDisplay from '../components/ErrorDisplay';
-import { FaCheckCircle, FaBookOpen, FaAward, FaPuzzlePiece } from 'react-icons/fa'; // Importing icons
+import { FaCheckCircle, FaBookOpen, FaAward, FaPuzzlePiece, FaWhatsapp } from 'react-icons/fa'; // Importing icons
+import { useWhatsApp } from '../context/WhatsAppContext'; // Import useWhatsApp context
 
 const courseLevels = ['Beginner', 'Intermediate', 'Advanced', 'All Levels']; // Levels used for filtering
 const courseCategories = ['all', 'Algebra', 'Geometry', 'Calculus', 'Competitive', 'Foundational', 'Advanced Topics'];
@@ -15,6 +16,7 @@ const CoursesPage = () => {
   const [error, setError] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('all'); // New state for category filter
   const [selectedLevel, setSelectedLevel] = useState('all'); // New state for level filter
+  const { openModal } = useWhatsApp(); // Access openModal from context
 
 
   const iconsMap = {
@@ -138,10 +140,24 @@ const CoursesPage = () => {
                     </li>
                   ))}
                 </ul>
-                {course.buttonText && course.buttonLink && (
+                {/* Conditional rendering for enroll button based on useCustomEnrollButton */}
+                {course.useCustomEnrollButton && course.buttonText && course.buttonLink ? (
                   <a href={course.buttonLink} target="_blank" rel="noopener noreferrer" className="mt-4 sm:mt-6 bg-accent text-dark-background font-bold py-2.5 px-5 sm:px-6 rounded-lg hover:bg-cyan-400 transition-all duration-300 transform hover:scale-105 shadow-md self-start text-sm sm:text-base">
                     {course.buttonText}
                   </a>
+                ) : (
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault(); // Prevent navigating if this card is wrapped in a Link
+                      openModal({
+                        subject: `Inquiry about ${course.title} Course`,
+                        userInterest: course.title
+                      });
+                    }}
+                    className="mt-4 sm:mt-6 bg-primary text-light-text font-bold py-2.5 px-5 sm:px-6 rounded-lg hover:bg-blue-600 transition-all duration-300 transform hover:scale-105 shadow-md self-start text-sm sm:text-base flex items-center justify-center"
+                  >
+                    <FaWhatsapp className="mr-2" /> Inquire on WhatsApp
+                  </button>
                 )}
               </div>
             </div>

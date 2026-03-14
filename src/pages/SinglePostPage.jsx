@@ -20,8 +20,14 @@ const SinglePostPage = () => {
   const [likeLoading, setLikeLoading] = useState(false);
   const [hasLiked, setHasLiked] = useState(false); // New state for local like status
 
+  // New states for quiz functionality
+  const [userVoted, setUserVoted] = useState(false);
+  const [votingLoading, setVotingLoading] = useState(false);
+  const [selectedVoteOption, setSelectedVoteOption] = useState(null); // The option the user chose
+
   const formatDate = (timestamp) => {
     if (!timestamp) return 'No Date';
+    // Firebase Timestamps have a toDate() method
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
   };
@@ -40,6 +46,14 @@ const SinglePostPage = () => {
         // Check local storage for like status
         const likedPosts = JSON.parse(localStorage.getItem('likedPosts')) || {};
         setHasLiked(!!likedPosts[id]);
+
+        // Check local storage for quiz vote status
+        if (fetchedPost.category === 'quiz') {
+            const votedQuizzes = JSON.parse(localStorage.getItem('votedQuizzes')) || {};
+            setUserVoted(!!votedQuizzes[id]);
+            // If user voted, we might want to store their choice too, but for poll display, just knowing they voted is enough.
+            // For now, we don't store the exact option chosen by anonymous users in local storage, only that they voted.
+        }
 
         // Fetch comments for this post
         const commentsQuery = query(collection(db, 'posts', id, 'comments'), orderBy('timestamp', 'desc'));
@@ -106,6 +120,42 @@ const SinglePostPage = () => {
     }
   };
 
+  const handleVote = async (option) => {
+      if (userVoted || votingLoading) return; // Prevent multiple votes
+      setVotingLoading(true);
+      setError(null);
+
+      try {
+          const postRef = doc(db, 'posts', id);
+          // Increment the count for the chosen option
+          await updateDoc(postRef, {
+              [`optionCounts.${option}`]: increment(1),
+          });
+
+          // Update local state to reflect the vote immediately
+          setPost(prevPost => {
+              const newOptionCounts = { ...prevPost.optionCounts };
+              newOptionCounts[option] = (newOptionCounts[option] || 0) + 1;
+              return { ...prevPost, optionCounts: newOptionCounts };
+          });
+
+          // Mark quiz as voted in local storage
+          const votedQuizzes = JSON.parse(localStorage.getItem('votedQuizzes')) || {};
+          votedQuizzes[id] = true;
+          localStorage.setItem('votedQuizzes', JSON.stringify(votedQuizzes));
+          setUserVoted(true); // Update local state
+          setSelectedVoteOption(option); // Store the chosen option for visual feedback
+          alert(`Voted for "${option}"!`);
+
+      } catch (err) {
+          console.error("Error submitting vote:", err);
+          setError("Failed to submit vote. Please try again.");
+      } finally {
+          setVotingLoading(false);
+      }
+  };
+
+
   const isVideo = (url) => {
     if (!url) return false;
     const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.wmv', '.flv'];
@@ -143,16 +193,81 @@ const SinglePostPage = () => {
           <span>{formatDate(post.timestamp)}</span>
         </div>
 
-        <div className="prose prose-sm sm:prose-lg max-w-none text-light-text leading-relaxed mb-6 md:mb-8 markdown-content">
-          {/* Use ReactMarkdown to render content with LaTeX support */}
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm, remarkMath]}
-            rehypePlugins={[rehypeKatex]}
-            children={post.content}
-            /* The 'className' prop on ReactMarkdown is deprecated. Styling should be applied to the parent or via the 'components' prop if specific elements need styling. */
-            /* The parent div already has 'markdown-content' class, and general markdown text is styled via 'src/styles/index.css' rules like '.markdown-content p'. */
-          />
-        </div>
+        {/* Quiz Section - Renders only if the post is a 'quiz' category */}
+        {post.category === 'quiz' && post.options && post.options.length > 0 && (
+            <div className="mt-8 md:mt-12 bg-dark-background p-6 rounded-lg border border-secondary mb-6 md:mb-8">
+                <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-4 md:mb-6">Quiz Question:</h2>
+                {/* The main post content is the quiz question itself */}
+                <div className="prose prose-sm sm:prose-lg max-w-none text-light-text leading-relaxed mb-6 markdown-content">
+                    <ReactMarkdown
+                        remarkPlugins={[remarkGfm, remarkMath]}
+                        rehypePlugins={[rehypeKatex]}
+                        children={post.content}
+                    />
+                </div>
+
+                <h3 className="text-xl sm:text-2xl font-semibold text-light-text mb-4">Choose your answer:</h3>
+
+                {userVoted ? (
+                    // Display results if user has voted
+                    <div className="space-y-3">
+                        {post.options.map((option, index) => {
+                            const totalVotes = Object.values(post.optionCounts || {}).reduce((sum, count) => sum + count, 0);
+                            const votesForOption = post.optionCounts?.[option] || 0;
+                            const percentage = totalVotes > 0 ? ((votesForOption / totalVotes) * 100).toFixed(1) : 0;
+                            const isSelected = option === selectedVoteOption; // Highlight the user's selected option
+
+                            return (
+                                <div key={index} className="flex flex-col">
+                                    <div className="flex justify-between items-center mb-1">
+                                        <span className={`font-semibold text-light-text ${isSelected ? 'text-accent' : ''}`}>
+                                            {option}
+                                        </span>
+                                        <span className="text-gray-text text-sm">{votesForOption} votes ({percentage}%)</span>
+                                    </div>
+                                    <div className="w-full bg-medium-dark rounded-full h-2.5">
+                                        <div
+                                            className="bg-primary h-2.5 rounded-full transition-all duration-500 ease-out"
+                                            style={{ width: `${percentage}%` }}
+                                        ></div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                        <p className="text-secondary text-center text-sm mt-4">Thank you for your vote! You have already participated in this poll.</p>
+                    </div>
+                ) : (
+                    // Display options as buttons if user hasn't voted
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {post.options.map((option, index) => (
+                            <button
+                                key={index}
+                                onClick={() => handleVote(option)}
+                                className="bg-primary text-light-text font-semibold py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-md text-base"
+                                disabled={votingLoading || userVoted}
+                            >
+                                {votingLoading && selectedVoteOption === option ? <LoadingSpinner /> : option}
+                            </button>
+                        ))}
+                        {votingLoading && <LoadingSpinner />}
+                        {error && <ErrorDisplay message={error} />}
+                        <p className="text-gray-text text-sm col-span-full mt-2 text-center">Vote once per device.</p>
+                    </div>
+                )}
+            </div>
+        )}
+
+        {/* Regular Content Section - Renders if not a quiz OR if quiz but without options */}
+        {!(post.category === 'quiz' && post.options && post.options.length > 0) && (
+            <div className="prose prose-sm sm:prose-lg max-w-none text-light-text leading-relaxed mb-6 md:mb-8 markdown-content">
+                <ReactMarkdown
+                    remarkPlugins={[remarkGfm, remarkMath]}
+                    rehypePlugins={[rehypeKatex]}
+                    children={post.content}
+                />
+            </div>
+        )}
+
 
         {/* Interaction Buttons */}
         <div className="flex flex-wrap items-center space-x-4 sm:space-x-6 border-t border-b border-secondary py-3 md:py-4 mb-6 md:mb-8">

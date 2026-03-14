@@ -11,18 +11,21 @@ const AdminPostForm = ({ post = null, onPostSaved, onPostDeleted }) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [category, setCategory] = useState(categories[0]);
-  const [fileToUpload, setFileToUpload] = useState(null); // Stores the actual file object
+  const [fileToUpload, setFileToUpload] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(''); // Stores URL for preview (local or existing Cloudinary URL)
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0); // For showing upload progress
+
+  // New states for quiz options
+  const [quizOptions, setQuizOptions] = useState([]);
+  const [newQuizOption, setNewQuizOption] = useState('');
 
   // Cloudinary credentials from .env.local
   const CLOUDINARY_CLOUD_NAME = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
   const CLOUDINARY_UPLOAD_PRESET = process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET;
 
   useEffect(() => {
-    // Log Cloudinary credentials to verify they are loaded correctly (consider removing in prod)
     // console.log('Cloudinary Cloud Name (from env):', CLOUDINARY_CLOUD_NAME);
     // console.log('Cloudinary Upload Preset (from env):', CLOUDINARY_UPLOAD_PRESET);
 
@@ -33,6 +36,12 @@ const AdminPostForm = ({ post = null, onPostSaved, onPostDeleted }) => {
       setPreviewUrl(post.imageUrl || ''); // Set preview if an image/video already exists
       setFileToUpload(null); // Clear any pending file upload when switching to edit mode
       setUploadProgress(0); // Reset upload progress
+      // Initialize quiz options if it's a quiz post
+      if (post.category === 'quiz' && post.options) {
+        setQuizOptions(post.options);
+      } else {
+        setQuizOptions([]);
+      }
     } else {
       // Reset form for creating a new post
       setTitle('');
@@ -41,6 +50,8 @@ const AdminPostForm = ({ post = null, onPostSaved, onPostDeleted }) => {
       setFileToUpload(null);
       setPreviewUrl('');
       setUploadProgress(0);
+      setQuizOptions([]); // Reset quiz options
+      setNewQuizOption('');
       // Explicitly clear file input element when switching to create mode
       if (document.getElementById('fileUpload')) {
         document.getElementById('fileUpload').value = '';
@@ -74,6 +85,18 @@ const AdminPostForm = ({ post = null, onPostSaved, onPostDeleted }) => {
     }
     setUploadProgress(0);
   };
+
+  const handleAddQuizOption = () => {
+      if (newQuizOption.trim() && !quizOptions.includes(newQuizOption.trim())) {
+          setQuizOptions([...quizOptions, newQuizOption.trim()]);
+          setNewQuizOption('');
+      }
+  };
+
+  const handleRemoveQuizOption = (optionToRemove) => {
+      setQuizOptions(quizOptions.filter(option => option !== optionToRemove));
+  };
+
 
   const uploadFileToCloudinary = async (file) => {
     if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) {
@@ -129,6 +152,12 @@ const AdminPostForm = ({ post = null, onPostSaved, onPostDeleted }) => {
       return;
     }
 
+    if (category === 'quiz' && quizOptions.length < 2) {
+      setError("Quiz posts must have at least two options.");
+      setLoading(false);
+      return;
+    }
+
     let finalImageUrl = ''; // This will be the URL saved to Firestore
 
     try {
@@ -149,6 +178,26 @@ const AdminPostForm = ({ post = null, onPostSaved, onPostDeleted }) => {
         category: category,
         imageUrl: finalImageUrl,
       };
+
+      if (category === 'quiz') {
+          postData.options = quizOptions;
+          if (!post || !post.optionCounts) { // Initialize optionCounts for new quiz or existing quiz without counts
+              postData.optionCounts = quizOptions.reduce((acc, option) => ({ ...acc, [option]: 0 }), {});
+          } else {
+              // When updating an existing quiz, ensure new options are initialized to 0,
+              // and removed options are no longer in counts.
+              const updatedOptionCounts = {};
+              for (const option of quizOptions) {
+                  updatedOptionCounts[option] = post.optionCounts[option] || 0;
+              }
+              postData.optionCounts = updatedOptionCounts;
+          }
+      } else {
+          // Ensure quiz-specific fields are not saved if category is not quiz
+          // This ensures options and optionCounts are removed if a post changes from quiz to another category.
+          if (post && post.options) delete postData.options;
+          if (post && post.optionCounts) delete postData.optionCounts;
+      }
 
       if (post) {
         // Update existing post
@@ -174,6 +223,8 @@ const AdminPostForm = ({ post = null, onPostSaved, onPostDeleted }) => {
         setCategory(categories[0]);
         setFileToUpload(null);
         setPreviewUrl('');
+        setQuizOptions([]);
+        setNewQuizOption('');
         if (document.getElementById('fileUpload')) {
           document.getElementById('fileUpload').value = '';
         }
@@ -201,7 +252,7 @@ const AdminPostForm = ({ post = null, onPostSaved, onPostDeleted }) => {
       alert('Post deleted successfully!');
       onPostDeleted(post.id); // Notify parent to remove from list
     } catch (err) {
-      console.error("Error deleting post: ", err);
+      console.error("Error deleting post:", err);
       setError(`Failed to delete post: ${err.message}`);
     } finally {
       setLoading(false);
@@ -268,6 +319,53 @@ const AdminPostForm = ({ post = null, onPostSaved, onPostDeleted }) => {
             ))}
           </select>
         </div>
+
+        {category === 'quiz' && (
+            <div className="mb-4 bg-dark-background p-4 rounded-lg border border-secondary">
+                <label className="block text-primary text-sm font-semibold mb-2">
+                    Quiz Options <span className="text-red-500">*</span> (Min 2 options)
+                </label>
+                <div className="flex flex-wrap gap-2 mb-2">
+                    {quizOptions.map((option, index) => (
+                        <span key={index} className="inline-flex items-center bg-primary text-light-text text-sm px-3 py-1 rounded-full">
+                            {option}
+                            <button
+                                type="button"
+                                onClick={() => handleRemoveQuizOption(option)}
+                                className="ml-2 text-red-300 hover:text-red-100 transition-colors"
+                                disabled={loading}
+                            >
+                                <FaTimes className="w-3 h-3" />
+                            </button>
+                        </span>
+                    ))}
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2">
+                    <input
+                        type="text"
+                        className="shadow-sm appearance-none border border-secondary rounded-lg flex-grow py-2 px-3 bg-dark-background text-light-text leading-tight focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-200"
+                        placeholder="Add a new quiz option"
+                        value={newQuizOption}
+                        onChange={(e) => setNewQuizOption(e.target.value)}
+                        onKeyPress={(e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                handleAddQuizOption();
+                            }
+                        }}
+                        disabled={loading}
+                    />
+                    <button
+                        type="button"
+                        onClick={handleAddQuizOption}
+                        className="bg-accent text-dark-background font-semibold py-2 px-4 rounded-lg hover:bg-cyan-400 transition-colors duration-300 disabled:opacity-50 w-full sm:w-auto"
+                        disabled={loading || newQuizOption.trim() === ''}
+                    >
+                        Add Option
+                    </button>
+                </div>
+            </div>
+        )}
         {/* Replaced imageUrl input with file input and preview */}
         <div className="mb-6">
           <label htmlFor="fileUpload" className="block text-secondary text-sm font-semibold mb-2">
