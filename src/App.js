@@ -19,6 +19,7 @@ import AdminPostsPage from './pages/AdminPostsPage'; // Import AdminPostsPage
 import AdminReviewsPage from './pages/AdminReviewsPage'; // Import AdminReviewsPage
 import AdminCommentsPage from './pages/AdminCommentsPage'; // Import AdminCommentsPage
 import AdminCoursesPage from './pages/AdminCoursesPage'; // Import AdminCoursesPage
+import WhatsAppButton from './components/WhatsAppButton'; // Import the new WhatsAppButton
 
 function App() {
   return (
@@ -53,6 +54,7 @@ function App() {
             </Routes>
           </main>
           <Footer />
+          <WhatsAppButton /> {/* Add the floating WhatsApp button */}
         </div>
       </AuthProvider>
     </Router>

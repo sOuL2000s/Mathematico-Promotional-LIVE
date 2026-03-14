@@ -5,12 +5,15 @@ import ErrorDisplay from './ErrorDisplay';
 import LoadingSpinner from './LoadingSpinner';
 import { FaTimes } from 'react-icons/fa'; // Import the close icon
 
+const courseCategories = ['Algebra', 'Geometry', 'Calculus', 'Competitive', 'Foundational', 'Advanced Topics'];
+
 const AdminCourseForm = ({ course = null, onCourseSaved, onCourseDeleted }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [features, setFeatures] = useState([]); // Array of strings
   const [newFeature, setNewFeature] = useState(''); // For adding new features
   const [level, setLevel] = useState('Beginner');
+  const [category, setCategory] = useState(courseCategories[0]); // New state for category
   const [fileToUpload, setFileToUpload] = useState(null); // Stores the actual file object
   const [previewUrl, setPreviewUrl] = useState(''); // Stores URL for preview (local or existing Cloudinary URL)
   const [buttonText, setButtonText] = useState('');
@@ -28,6 +31,7 @@ const AdminCourseForm = ({ course = null, onCourseSaved, onCourseDeleted }) => {
       setDescription(course.description || '');
       setFeatures(course.features || []);
       setLevel(course.level || 'Beginner');
+      setCategory(course.category || courseCategories[0]); // Set category from course data
       setPreviewUrl(course.imageUrl || '');
       setButtonText(course.buttonText || '');
       setButtonLink(course.buttonLink || '');
@@ -40,6 +44,7 @@ const AdminCourseForm = ({ course = null, onCourseSaved, onCourseDeleted }) => {
       setFeatures([]);
       setNewFeature('');
       setLevel('Beginner');
+      setCategory(courseCategories[0]); // Reset category for new course
       setFileToUpload(null);
       setPreviewUrl('');
       setButtonText('');
@@ -157,6 +162,7 @@ const AdminCourseForm = ({ course = null, onCourseSaved, onCourseDeleted }) => {
         description: description.trim(),
         features: features,
         level: level,
+        category: category, // Add category to course data
         imageUrl: finalImageUrl,
         buttonText: buttonText.trim(),
         buttonLink: buttonLink.trim(),
@@ -314,6 +320,25 @@ const AdminCourseForm = ({ course = null, onCourseSaved, onCourseDeleted }) => {
             <option value="Intermediate">Intermediate</option>
             <option value="Advanced">Advanced</option>
             <option value="All Levels">All Levels</option>
+          </select>
+        </div>
+        <div className="mb-4">
+          <label htmlFor="category" className="block text-secondary text-sm font-semibold mb-2">
+            Category <span className="text-red-500">*</span>
+          </label>
+          <select
+            id="category"
+            className="shadow-sm appearance-none border border-secondary rounded-lg w-full py-2 px-3 bg-dark-background text-light-text leading-tight focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            required
+            disabled={loading}
+          >
+            {courseCategories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
           </select>
         </div>
         <div className="mb-4">

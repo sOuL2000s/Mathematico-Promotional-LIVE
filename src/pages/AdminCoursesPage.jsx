@@ -105,6 +105,7 @@ const AdminCoursesPage = () => {
                 <tr className="text-light-text uppercase text-xs sm:text-sm leading-normal">
                   <th className="py-3 px-4 sm:px-6 text-left border-b border-secondary">Title</th>
                   <th className="py-3 px-4 sm:px-6 text-left border-b border-secondary">Level</th>
+                  <th className="py-3 px-4 sm:px-6 text-left border-b border-secondary">Category</th> {/* New column */}
                   <th className="py-3 px-4 sm:px-6 text-left border-b border-secondary">Button Text</th>
                   <th className="py-3 px-4 sm:px-6 text-center border-b border-secondary">Created At</th>
                   <th className="py-3 px-4 sm:px-6 text-center border-b border-secondary">Actions</th>
@@ -113,7 +114,7 @@ const AdminCoursesPage = () => {
               <tbody className="text-secondary text-xs sm:text-sm font-light">
                 {courses.length === 0 ? (
                   <tr>
-                    <td colSpan="5" className="py-4 text-center text-gray-text">No courses found.</td>
+                    <td colSpan="6" className="py-4 text-center text-gray-text">No courses found.</td>
                   </tr>
                 ) : (
                   courses.map((course) => (
@@ -124,6 +125,9 @@ const AdminCoursesPage = () => {
                       <td className="py-3 px-4 sm:px-6 text-left">
                         <span className="bg-primary text-light-text py-1 px-2 rounded-full text-xs font-semibold">{course.level}</span>
                       </td>
+                      <td className="py-3 px-4 sm:px-6 text-left">
+                        <span className="bg-secondary text-dark-background py-1 px-2 rounded-full text-xs font-semibold">{course.category || 'N/A'}</span>
+                      </td> {/* Display category */}
                       <td className="py-3 px-4 sm:px-6 text-left text-light-text">{course.buttonText || 'N/A'}</td>
                       <td className="py-3 px-4 sm:px-6 text-center whitespace-nowrap text-gray-text">{formatDate(course.createdAt)}</td>
                       <td className="py-3 px-4 sm:px-6 text-center">

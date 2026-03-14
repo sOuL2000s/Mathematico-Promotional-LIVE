@@ -1,15 +1,21 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { db } from '../firebase';
-import { collection, query, orderBy, getDocs } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs, where } from 'firebase/firestore'; // Added 'where'
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorDisplay from '../components/ErrorDisplay';
 import { FaCheckCircle, FaBookOpen, FaAward, FaPuzzlePiece } from 'react-icons/fa'; // Importing icons
+
+const courseLevels = ['Beginner', 'Intermediate', 'Advanced', 'All Levels']; // Levels used for filtering
+const courseCategories = ['all', 'Algebra', 'Geometry', 'Calculus', 'Competitive', 'Foundational', 'Advanced Topics'];
 
 const CoursesPage = () => {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState('all'); // New state for category filter
+  const [selectedLevel, setSelectedLevel] = useState('all'); // New state for level filter
+
 
   const iconsMap = {
     'Beginner': FaBookOpen,
@@ -23,7 +29,16 @@ const CoursesPage = () => {
     setLoading(true);
     setError(null);
     try {
-      const q = query(collection(db, 'courses'), orderBy('createdAt', 'asc')); // Assuming 'createdAt' field
+      let q = collection(db, 'courses');
+      
+      if (selectedCategory !== 'all') {
+        q = query(q, where('category', '==', selectedCategory));
+      }
+      if (selectedLevel !== 'all') {
+        q = query(q, where('level', '==', selectedLevel));
+      }
+
+      q = query(q, orderBy('createdAt', 'asc')); // Assuming 'createdAt' field
       const querySnapshot = await getDocs(q);
       const fetchedCourses = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -36,7 +51,7 @@ const CoursesPage = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedCategory, selectedLevel]); // Add selectedCategory and selectedLevel to dependencies
 
   useEffect(() => {
     fetchCourses();
@@ -48,9 +63,53 @@ const CoursesPage = () => {
   return (
     <div className="container mx-auto py-8 md:py-12 px-4 min-h-screen">
       <h1 className="text-4xl sm:text-5xl font-bold text-light-text mb-8 md:mb-10 text-center animate-fade-in-up">Our Comprehensive Courses</h1>
-      <p className="text-base sm:text-xl text-secondary text-center mb-8 md:mb-12 max-w-3xl mx-auto animate-fade-in-up animation-delay-100">
-        Mathematico offers a diverse range of courses designed to cater to students at every stage of their mathematical journey. From foundational concepts to advanced competitive training, we have a program for you.
-      </p>
+        <p className="text-base sm:text-xl text-secondary text-center mb-8 md:mb-12 max-w-3xl mx-auto animate-fade-in-up animation-delay-100">
+          Mathematico offers a diverse range of courses designed to cater to students at every stage of their mathematical journey. From foundational concepts to advanced competitive training, we have a program for you.
+        </p>
+
+      {/* Category Filter */}
+      <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mb-8 md:mb-10 animate-fade-in-up animation-delay-200">
+        {courseCategories.map(cat => (
+          <button
+            key={cat}
+            onClick={() => setSelectedCategory(cat)}
+            className={`px-4 sm:px-6 py-1.5 sm:py-2.5 rounded-full text-sm sm:text-lg font-semibold transition-all duration-300 whitespace-nowrap
+              ${selectedCategory === cat
+                ? 'bg-accent text-dark-background shadow-md hover:bg-cyan-400'
+                : 'bg-secondary text-dark-background hover:bg-light-text'
+              }`}
+          >
+            {cat.charAt(0).toUpperCase() + cat.slice(1)}
+          </button>
+        ))}
+      </div>
+
+      {/* Level Filter */}
+      <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mb-8 md:mb-10 animate-fade-in-up animation-delay-200">
+        <button
+          onClick={() => setSelectedLevel('all')}
+          className={`px-4 sm:px-6 py-1.5 sm:py-2.5 rounded-full text-sm sm:text-lg font-semibold transition-all duration-300 whitespace-nowrap
+            ${selectedLevel === 'all'
+              ? 'bg-accent text-dark-background shadow-md hover:bg-cyan-400'
+              : 'bg-secondary text-dark-background hover:bg-light-text'
+            }`}
+        >
+          All Levels
+        </button>
+        {courseLevels.filter(level => level !== 'All Levels').map(level => (
+          <button
+            key={level}
+            onClick={() => setSelectedLevel(level)}
+            className={`px-4 sm:px-6 py-1.5 sm:py-2.5 rounded-full text-sm sm:text-lg font-semibold transition-all duration-300 whitespace-nowrap
+              ${selectedLevel === level
+                ? 'bg-accent text-dark-background shadow-md hover:bg-cyan-400'
+                : 'bg-secondary text-dark-background hover:bg-light-text'
+              }`}
+          >
+            {level}
+          </button>
+        ))}
+      </div>
 
       {!loading && courses.length === 0 && !error && (
         <p className="text-center text-secondary text-base sm:text-xl mt-8 animate-fade-in">No courses available at the moment.</p>

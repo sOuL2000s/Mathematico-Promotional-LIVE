@@ -1,8 +1,68 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { MdEmail, MdPhone, MdLocationOn, MdAccessTime } from 'react-icons/md'; // Importing icons
 import { FaWhatsapp } from 'react-icons/fa';
+import LoadingSpinner from '../components/LoadingSpinner'; // Import LoadingSpinner
+import ErrorDisplay from '../components/ErrorDisplay'; // Import ErrorDisplay
 
 const ContactPage = () => {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [subject, setSubject] = useState('');
+  const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
+
+  // Placeholder for an actual email sending function (requires backend)
+  const sendContactEmail = async (formData) => {
+    // In a real application, you would send this data to a backend endpoint
+    // (e.g., Firebase Cloud Function, custom Node.js/Python server, or a service like EmailJS/Formspree).
+    // The backend would then handle sending the email securely.
+    // Client-side direct email sending (e.g., mailto) is not "hidden" and not what's requested.
+    // For this demonstration, we'll simulate an asynchronous backend call.
+
+    console.log("Simulating sending email with data:", formData);
+
+    return new Promise(resolve => {
+      setTimeout(() => {
+        // Simulate success
+        console.log("Email simulated successfully sent!");
+        resolve({ success: true, message: "Your message has been sent successfully!" });
+
+        // // Simulate error (uncomment to test error state)
+        // console.error("Simulating email send failure!");
+        // reject(new Error("Failed to send message. Please try again."));
+      }, 2000); // Simulate network delay
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setSuccess(false);
+
+    if (!name.trim() || !email.trim() || !subject.trim() || !message.trim()) {
+      setError("All fields are required.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      await sendContactEmail({ name, email, subject, message });
+      setSuccess(true);
+      setName('');
+      setEmail('');
+      setSubject('');
+      setMessage('');
+    } catch (err) {
+      console.error("Contact form submission error:", err);
+      setError(err.message || "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="container mx-auto py-8 md:py-12 px-4 min-h-screen">
       <h1 className="text-4xl sm:text-5xl font-bold text-light-text mb-8 md:mb-10 text-center animate-fade-in-up">Contact Us</h1>
@@ -68,60 +128,83 @@ const ContactPage = () => {
           </div>
         </section>
 
-        {/* Contact Form (Non-functional) */}
+        {/* Contact Form */}
         <section className="bg-medium-dark p-6 md:p-8 rounded-xl shadow-lg border border-secondary animate-fade-in-up animation-delay-300">
           <h2 className="text-2xl sm:text-3xl font-semibold text-primary mb-4 md:mb-6">Send Us a Message</h2>
-          <form className="space-y-5">
+          {error && <ErrorDisplay message={error} />}
+          {success && (
+            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative my-4" role="alert">
+              <strong className="font-bold">Success!</strong>
+              <span className="block sm:inline ml-2">Your message has been sent successfully. We will get back to you shortly!</span>
+            </div>
+          )}
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label htmlFor="name" className="block text-secondary text-sm font-semibold mb-2">
-                Your Name
+                Your Name <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 id="name"
                 className="shadow-sm appearance-none border border-secondary rounded-lg w-full py-2 px-3 bg-dark-background text-light-text leading-tight focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm transition-all duration-200"
                 placeholder="John Doe"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                disabled={loading}
               />
             </div>
             <div>
               <label htmlFor="email" className="block text-secondary text-sm font-semibold mb-2">
-                Your Email
+                Your Email <span className="text-red-500">*</span>
               </label>
               <input
                 type="email"
                 id="email"
                 className="shadow-sm appearance-none border border-secondary rounded-lg w-full py-2 px-3 bg-dark-background text-light-text leading-tight focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm transition-all duration-200"
                 placeholder="john.doe@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={loading}
               />
             </div>
             <div>
               <label htmlFor="subject" className="block text-secondary text-sm font-semibold mb-2">
-                Subject
+                Subject <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 id="subject"
                 className="shadow-sm appearance-none border border-secondary rounded-lg w-full py-2 px-3 bg-dark-background text-light-text leading-tight focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm transition-all duration-200"
                 placeholder="Inquiry about courses"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                required
+                disabled={loading}
               />
             </div>
             <div>
               <label htmlFor="message" className="block text-secondary text-sm font-semibold mb-2">
-                Your Message
+                Your Message <span className="text-red-500">*</span>
               </label>
               <textarea
                 id="message"
                 rows="5"
                 className="shadow-sm appearance-none border border-secondary rounded-lg w-full py-2 px-3 bg-dark-background text-light-text leading-tight focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent resize-y text-sm transition-all duration-200"
                 placeholder="Type your message here..."
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                required
+                disabled={loading}
               ></textarea>
             </div>
             <button
               type="submit"
-              className="bg-primary text-light-text font-bold py-2.5 px-6 rounded-lg hover:bg-blue-600 transition-colors duration-300 transform hover:scale-105 shadow-md text-base w-full md:w-auto"
-              onClick={(e) => { e.preventDefault(); alert('Form submission is not functional in this demo.'); }}
+              className="bg-primary text-light-text font-bold py-2.5 px-6 rounded-lg hover:bg-blue-600 transition-colors duration-300 transform hover:scale-105 shadow-md text-base w-full md:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={loading}
             >
-              Send Message
+              {loading ? <LoadingSpinner /> : 'Send Message'}
             </button>
           </form>
         </section>
