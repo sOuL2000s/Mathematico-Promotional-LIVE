@@ -5,11 +5,12 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useAuth } from '../context/AuthContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorDisplay from '../components/ErrorDisplay';
-import { FaUserShield } from 'react-icons/fa'; // Import an icon for admin login
+import { FaUserShield, FaEye, FaEyeSlash } from 'react-icons/fa'; // Import icons for admin login and password visibility
 
 const AdminLoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false); // New state for password visibility
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -44,6 +45,10 @@ const AdminLoginPage = () => {
     }
   };
 
+  const togglePasswordVisibility = () => {
+    setShowPassword((prevShowPassword) => !prevShowPassword);
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-dark-background px-4 py-8">
       <div className="bg-medium-dark p-8 rounded-xl shadow-2xl w-full max-w-md border border-secondary animate-fade-in">
@@ -72,16 +77,27 @@ const AdminLoginPage = () => {
             <label htmlFor="password" className="block text-secondary text-sm font-semibold mb-2">
               Password
             </label>
-            <input
-              type="password"
-              id="password"
-              className="shadow-sm appearance-none border border-secondary rounded-lg w-full py-3 px-4 bg-dark-background text-light-text leading-tight focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-200"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="********"
-              required
-              disabled={loading}
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                className="shadow-sm appearance-none border border-secondary rounded-lg w-full py-3 px-4 pr-12 bg-dark-background text-light-text leading-tight focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-200"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="********"
+                required
+                disabled={loading}
+              />
+              <button
+                type="button"
+                onClick={togglePasswordVisibility}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-text hover:text-light-text focus:outline-none"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                disabled={loading}
+              >
+                {showPassword ? <FaEyeSlash className="h-5 w-5" /> : <FaEye className="h-5 w-5" />}
+              </button>
+            </div>
           </div>
           <button
             type="submit"

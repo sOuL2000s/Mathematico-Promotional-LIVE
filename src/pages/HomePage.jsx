@@ -62,10 +62,10 @@ const HomePage = () => {
 
         <div className="container mx-auto relative z-10"> {/* Ensure content is above patterns */}
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold mb-4 md:mb-6 leading-tight animate-fade-in-up">
-            Master Mathematics with <span className="text-accent">Mathematico</span>
+            Unlocking Mathematical Brilliance: Master Mathematics with <span className="text-accent">Mathematico</span>
           </h1>
           <p className="text-lg sm:text-xl md:text-2xl mb-8 md:mb-10 max-w-4xl mx-auto opacity-90 animate-fade-in-up animation-delay-200">
-            Unlocking your potential in numbers, one problem at a time. Join our coaching center and supercharge your learning with our innovative Android app!
+            Your journey to truly understand and excel in mathematics starts now. We offer comprehensive coaching for all academic boards and competitive exams, empowering your potential in numbers. Enhance your learning experience with our innovative Android app!
           </p>
           <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-6">
             <Link

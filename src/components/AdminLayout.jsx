@@ -3,7 +3,7 @@ import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
-import { MdDashboard, MdPostAdd, MdRateReview, MdComment, MdOutlineLibraryBooks, MdLogout, MdClose } from 'react-icons/md';
+import { MdDashboard, MdPostAdd, MdRateReview, MdComment, MdOutlineLibraryBooks, MdLogout, MdClose, MdSettings } from 'react-icons/md'; // Added MdSettings
 import { GiHamburgerMenu } from "react-icons/gi";
 // Removed unused icons: FaAngleDoubleLeft, FaAngleDoubleRight
 
@@ -101,6 +101,7 @@ const AdminLayout = () => {
           <NavItem to="/admin/courses" icon={MdOutlineLibraryBooks} label="Manage Courses" closeSidebar={() => setIsMobileSidebarOpen(false)} />
           <NavItem to="/admin/reviews" icon={MdRateReview} label="Moderate Reviews" closeSidebar={() => setIsMobileSidebarOpen(false)} />
           <NavItem to="/admin/comments" icon={MdComment} label="Moderate Comments" closeSidebar={() => setIsMobileSidebarOpen(false)} />
+          <NavItem to="/admin/settings" icon={MdSettings} label="App Settings" closeSidebar={() => setIsMobileSidebarOpen(false)} /> {/* New Nav Item */}
         </nav>
 
         <div className="mt-8 pt-4 border-t border-secondary">

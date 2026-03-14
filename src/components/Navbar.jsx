@@ -5,6 +5,7 @@ import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
 import { GiHamburgerMenu } from "react-icons/gi";
 import { AiOutlineClose } from "react-icons/ai";
+import logo from '../logo.svg'; // Import the SVG logo
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -32,8 +33,14 @@ const Navbar = () => {
   return (
     <nav className="bg-dark-background p-4 shadow-xl sticky top-0 z-50">
       <div className="container mx-auto flex justify-between items-center">
-        <Link to="/" className="text-light-text text-3xl font-bold tracking-wider hover:text-primary transition-colors duration-300" onClick={closeMenu}>
-          Mathematico
+        <Link 
+          to="/" 
+          className="flex items-center space-x-2 text-light-text text-2xl md:text-3xl 
+                     font-bold tracking-wider hover:text-primary transition-colors duration-300" 
+          onClick={closeMenu}
+        >
+          <img src={logo} alt="Mathematico Logo" className="w-10 h-10 md:w-12 md:h-12 lg:w-16 lg:h-16" />
+          <span>Mathematico</span>
         </Link>
         <div className="md:hidden">
           <button onClick={toggleMenu} className="text-light-text focus:outline-none p-2 rounded-md hover:bg-medium-dark transition-colors">
@@ -48,7 +55,8 @@ const Navbar = () => {
           </div>
           <div className="flex flex-col p-4 md:p-0 md:flex-row md:space-x-6 text-xl md:space-y-0 space-y-4 md:text-lg">
             <NavLink to="/" onClick={closeMenu}>Home</NavLink>
-            <NavLink to="/about" onClick={closeMenu}>About Us</NavLink>
+            <NavLink to="/about" onClick={closeMenu}>About Us</NavLink>            
+            <NavLink to="/instructors" onClick={closeMenu}>Instructors</NavLink> {/* New NavLink */}
             <NavLink to="/courses" onClick={closeMenu}>Courses</NavLink>
             <NavLink to="/posts" onClick={closeMenu}>Posts</NavLink>
             <NavLink to="/reviews" onClick={closeMenu}>Reviews</NavLink>
