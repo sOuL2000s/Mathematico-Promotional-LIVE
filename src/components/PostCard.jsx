@@ -13,7 +13,16 @@ const PostCard = ({ post }) => {
   const isVideo = (url) => {
     if (!url) return false;
     const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.wmv', '.flv'];
-    return videoExtensions.some(ext => url.toLowerCase().includes(ext));
+    // Check if the URL string contains any known video file extension
+    // Also, Cloudinary URLs might have a type indicator like /video/upload/
+    return videoExtensions.some(ext => url.toLowerCase().includes(ext)) || url.toLowerCase().includes('/video/upload/');
+  };
+
+  // Helper to add Cloudinary transformations
+  const getOptimizedImageUrl = (url, width) => {
+    if (!url || !url.includes('res.cloudinary.com')) return url;
+    // Example: insert 'f_auto,q_auto,w_WIDTH' after '/upload/'
+    return url.replace('/upload/', `/upload/f_auto,q_auto,w_${width}/`);
   };
 
   return (
@@ -25,14 +34,16 @@ const PostCard = ({ post }) => {
               <video
                 src={post.imageUrl}
                 preload="metadata" // Load metadata to show first frame
+                loading="lazy" // Lazy load video
                 className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
               >
                 Your browser does not support the video tag.
               </video>
             ) : (
               <img
-                src={post.imageUrl}
+                src={getOptimizedImageUrl(post.imageUrl, 500)} // Optimize image for display width
                 alt={post.title}
+                loading="lazy" // Lazy load image
                 className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
                 onError={(e) => { e.target.onerror = null; e.target.src = "/logo512.png" }} // Fallback image
               />

@@ -134,6 +134,7 @@ const VideosPage = () => {
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
+                loading="lazy" // Lazy load iframe
               ></iframe>
             </div>
             <div className="p-4 sm:p-6 flex flex-col flex-grow">

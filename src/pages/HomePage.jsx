@@ -131,6 +131,7 @@ const HomePage = () => {
             <img
               src="/mathematico-app-qr.png"
               alt="Mathematico Android App"
+              loading="lazy" // Lazy load the app screenshot
               className="rounded-xl shadow-2xl max-w-full h-auto w-64 sm:w-80 md:w-[400px]"
             />
           </div>

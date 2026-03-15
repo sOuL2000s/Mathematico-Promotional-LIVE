@@ -47,13 +47,14 @@ const Navbar = () => {
             {isOpen ? <AiOutlineClose className="w-7 h-7" /> : <GiHamburgerMenu className="w-7 h-7" />}
           </button>
         </div>
-        <div className={`fixed inset-y-0 right-0 w-64 bg-dark-background transform ${isOpen ? 'translate-x-0' : 'translate-x-full'} transition-transform duration-300 ease-in-out md:static md:flex md:w-auto md:bg-transparent md:transform-none md:transition-none z-40`}>
+        <div className={`fixed inset-y-0 right-0 w-64 bg-dark-background flex flex-col transform ${isOpen ? 'translate-x-0' : 'translate-x-full'} transition-transform duration-300 ease-in-out md:static md:flex md:w-auto md:bg-transparent md:transform-none md:transition-none z-40`}>
           <div className="flex justify-end p-4 md:hidden">
             <button onClick={closeMenu} className="text-light-text focus:outline-none p-2 rounded-md hover:bg-medium-dark transition-colors">
               <AiOutlineClose className="w-7 h-7" />
             </button>
           </div>
-          <div className="flex flex-col p-4 md:p-0 md:flex-row md:space-x-6 text-xl md:space-y-0 space-y-4 md:text-lg">
+          {/* Scrollable content area */}
+          <div className="flex-grow overflow-y-auto flex flex-col p-4 md:p-0 md:flex-row md:space-x-6 text-xl md:space-y-0 space-y-4 md:text-lg">
             <NavLink to="/" onClick={closeMenu}>Home</NavLink>
             <NavLink to="/about" onClick={closeMenu}>About Us</NavLink>            
             <NavLink to="/instructors" onClick={closeMenu}>Instructors</NavLink> {/* New NavLink */}

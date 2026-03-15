@@ -159,7 +159,16 @@ const SinglePostPage = () => {
   const isVideo = (url) => {
     if (!url) return false;
     const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.wmv', '.flv'];
-    return videoExtensions.some(ext => url.toLowerCase().includes(ext));
+    // Check if the URL string contains any known video file extension
+    // Also, Cloudinary URLs might have a type indicator like /video/upload/
+    return videoExtensions.some(ext => url.toLowerCase().includes(ext)) || url.toLowerCase().includes('/video/upload/');
+  };
+
+  // Helper to add Cloudinary transformations
+  const getOptimizedImageUrl = (url, width) => {
+    if (!url || !url.includes('res.cloudinary.com')) return url;
+    // Example: insert 'f_auto,q_auto,w_WIDTH' after '/upload/'
+    return url.replace('/upload/', `/upload/f_auto,q_auto,w_${width}/`);
   };
 
   if (loading) return <LoadingSpinner />;
@@ -172,11 +181,17 @@ const SinglePostPage = () => {
         {post.imageUrl && (
           <div className="w-full mb-6 md:mb-8 rounded-lg shadow-md overflow-hidden bg-dark-background flex items-center justify-center max-h-[500px]">
             {isVideo(post.imageUrl) ? (
-              <video src={post.imageUrl} controls className="w-full h-full object-contain max-h-[500px]"></video>
+              <video
+                src={post.imageUrl}
+                controls
+                loading="lazy" // Lazy load video
+                className="w-full h-full object-contain max-h-[500px]"
+              ></video>
             ) : (
               <img
-                src={post.imageUrl}
+                src={getOptimizedImageUrl(post.imageUrl, 800)} // Optimize image for display width
                 alt={post.title}
+                loading="lazy" // Lazy load image
                 className="w-full h-full object-contain max-h-[500px] p-2" /* Added padding for better visibility if image touches edges */
                 onError={(e) => { e.target.onerror = null; e.target.src = "/logo512.png" }}
               />

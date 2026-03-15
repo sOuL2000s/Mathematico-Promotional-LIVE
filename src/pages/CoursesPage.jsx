@@ -100,6 +100,12 @@ const CoursesPage = () => {
     setDisplayedCourses(tempCourses);
   }, [allCourses, selectedCategory, selectedLevel, searchTerm, sortKey, sortOrder]);
 
+  // Helper to add Cloudinary transformations
+  const getOptimizedImageUrl = (url, width) => {
+    if (!url || !url.includes('res.cloudinary.com')) return url;
+    // Example: insert 'f_auto,q_auto,w_WIDTH' after '/upload/'
+    return url.replace('/upload/', `/upload/f_auto,q_auto,w_${width}/`);
+  };
 
   return (
     <div className="container mx-auto py-8 md:py-12 px-4 min-h-screen">
@@ -192,7 +198,7 @@ const CoursesPage = () => {
           const CourseIcon = iconsMap[course.level] || FaBookOpen;
           return (
             <div key={course.id} className="group bg-medium-dark rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-secondary flex flex-col animate-fade-in-up transform hover:-translate-y-2 hover:border-accent" style={{ animationDelay: `${index * 0.1}s` }}>
-              {course.imageUrl && <img src={course.imageUrl} alt={course.title} className="w-full h-48 sm:h-56 object-cover object-center group-hover:scale-105 transition-transform duration-300" />}
+              {course.imageUrl && <img src={getOptimizedImageUrl(course.imageUrl, 500)} alt={course.title} loading="lazy" className="w-full h-48 sm:h-56 object-cover object-center group-hover:scale-105 transition-transform duration-300" />}
               <div className="p-4 sm:p-6 flex flex-col flex-grow">
                 <div className="flex items-center mb-2 sm:mb-3">
                   <CourseIcon className="text-accent text-2xl mr-2" />

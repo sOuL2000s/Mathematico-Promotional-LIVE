@@ -72,6 +72,12 @@ const BooksPage = () => {
     setDisplayedBooks(tempBooks);
   }, [allBooks, searchTerm, sortKey, sortOrder]);
 
+  // Helper to add Cloudinary transformations
+  const getOptimizedImageUrl = (url, width) => {
+    if (!url || !url.includes('res.cloudinary.com')) return url;
+    // Example: insert 'f_auto,q_auto,w_WIDTH' after '/upload/'
+    return url.replace('/upload/', `/upload/f_auto,q_auto,w_${width}/`);
+  };
 
   if (loading) return <LoadingSpinner />;
   if (error) return <ErrorDisplay message={error} />;
@@ -128,8 +134,9 @@ const BooksPage = () => {
           <div key={book.id} className="group bg-medium-dark rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-secondary flex flex-col animate-fade-in-up transform hover:-translate-y-2 hover:border-accent" style={{ animationDelay: `${index * 0.1}s` }}>
             {book.imageUrl && (
               <img
-                src={book.imageUrl}
+                src={getOptimizedImageUrl(book.imageUrl, 500)} // Optimize image for display width
                 alt={book.title}
+                loading="lazy" // Lazy load image
                 className="w-full h-56 object-cover object-center group-hover:scale-105 transition-transform duration-300"
                 onError={(e) => { e.target.onerror = null; e.target.src = "/logo512.png" }} // Fallback image
               />

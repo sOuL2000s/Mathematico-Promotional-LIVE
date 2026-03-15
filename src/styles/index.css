@@ -76,6 +76,21 @@ body::after {
   }
 }
 
+/* Ensure main content area always takes full height, even with lazy loading */
+.min-h-screen-main {
+  min-height: calc(100vh - 72px - 264px); /* Full viewport height - navbar height - footer height */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+@media (min-width: 768px) { /* Adjust footer height for desktop if different */
+  .min-h-screen-main {
+    min-height: calc(100vh - 80px - 216px); /* Adjusted for typical desktop navbar/footer heights */
+  }
+}
+
+
 /* Specific styling for markdown content, especially for KaTeX */
 .markdown-content .katex-display {
   @apply overflow-x-auto p-2 bg-dark-background rounded-md my-4 border border-secondary;

@@ -35,6 +35,12 @@ const InstructorsPage = () => {
     fetchFounderImage();
   }, []);
 
+  // Helper to add Cloudinary transformations
+  const getOptimizedImageUrl = (url, width) => {
+    if (!url || !url.includes('res.cloudinary.com')) return url;
+    // Example: insert 'f_auto,q_auto,w_WIDTH' after '/upload/'
+    return url.replace('/upload/', `/upload/f_auto,q_auto,w_${width}/`);
+  };
 
   // Since there is only one instructor, the page focuses on him
   const instructor = {
@@ -73,9 +79,10 @@ const InstructorsPage = () => {
         <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-8">
           <div className="flex-shrink-0 text-center">
             <img
-              src={instructor.imageUrl}
+              src={getOptimizedImageUrl(instructor.imageUrl, 300)} // Optimize image for display width
               alt={instructor.name}
               className="rounded-full w-48 h-48 md:w-56 md:h-56 object-cover object-top mx-auto shadow-lg border-4 border-accent"
+              loading="lazy" // Lazy load image
             />
             <h2 className="text-3xl font-bold text-primary mt-4">{instructor.name}</h2>
             <p className="text-light-text text-xl">{instructor.title}</p>

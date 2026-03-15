@@ -36,6 +36,13 @@ const AboutPage = () => {
     fetchFounderImage();
   }, []);
 
+  // Helper to add Cloudinary transformations
+  const getOptimizedImageUrl = (url, width) => {
+    if (!url || !url.includes('res.cloudinary.com')) return url;
+    // Example: insert 'f_auto,q_auto,w_WIDTH' after '/upload/'
+    return url.replace('/upload/', `/upload/f_auto,q_auto,w_${width}/`);
+  };
+
   if (loading) return <LoadingSpinner />;
   if (error) return <div className="container mx-auto py-8 md:py-12 px-4 min-h-screen"><ErrorDisplay message={error} /></div>;
 
@@ -49,9 +56,10 @@ const AboutPage = () => {
         <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
           <div className="w-full md:w-1/3 flex-shrink-0 text-center">
             <img 
-              src={founderImageUrl} 
+              src={getOptimizedImageUrl(founderImageUrl, 300)} // Optimize image for display width
               alt="Dipanjan Chatterjee, Founder of Mathematico" 
               className="rounded-full w-48 h-48 md:w-56 md:h-56 object-cover object-top mx-auto shadow-lg border-4 border-primary" 
+              loading="lazy" // Lazy load image
               onError={(e) => { e.target.onerror = null; e.target.src = "/logo512.png" }} // Fallback image on error
             />
             <h3 className="text-xl font-semibold text-light-text mt-4">Dipanjan Chatterjee</h3>
