@@ -416,7 +416,7 @@ const AdminPostForm = ({ post = null, onPostSaved, onPostDeleted }) => {
             className="bg-primary text-light-text font-bold py-2 px-6 rounded-lg hover:bg-blue-600 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
             disabled={loading}
           >
-            {loading ? <LoadingSpinner /> : (post ? 'Update Post' : 'Create Post')}
+            {loading ? <LoadingSpinner size="small" /> : (post ? 'Update Post' : 'Create Post')}
           </button>
           {post && (
             <button
@@ -425,7 +425,7 @@ const AdminPostForm = ({ post = null, onPostSaved, onPostDeleted }) => {
               className="bg-red-600 text-light-text font-bold py-2 px-6 rounded-lg hover:bg-red-700 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
               disabled={loading}
             >
-              {loading ? <LoadingSpinner /> : 'Delete Post'}
+              {loading ? <LoadingSpinner size="small" /> : 'Delete Post'}
             </button>
           )}
         </div>

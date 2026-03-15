@@ -246,7 +246,7 @@ const SinglePostPage = () => {
                                 className="bg-primary text-light-text font-semibold py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-md text-base"
                                 disabled={votingLoading || userVoted}
                             >
-                                {votingLoading && selectedVoteOption === option ? <LoadingSpinner /> : option}
+                                {votingLoading && selectedVoteOption === option ? <LoadingSpinner size="small" /> : option}
                             </button>
                         ))}
                         {votingLoading && <LoadingSpinner />}

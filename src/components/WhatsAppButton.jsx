@@ -67,26 +67,28 @@ const WhatsAppButton = () => {
 
     // Construct the WhatsApp message with all details
     const formattedMessage = `
-🌟 *New Inquiry from Mathematico Website!* 🌟
----
+*🌟 New Inquiry from Mathematico Website! 🌟*
+---------------------------------------
 *🧑‍🎓 Student Details:*
-*Name:* ${userName.trim()}
-*Email:* ${userEmail.trim()}
-*Contact No.:* ${userContactNumber.trim()}
-*Grade/Class:* ${userGrade.trim() || 'Not specified'}
-*Academic Board:* ${userBoard.trim() || 'Not specified'}
-*Area of Interest:* ${userInterest.trim() || 'Not specified'}
-*Coaching Preference:* ${userPreference.trim() || 'Not specified'}
+*✅ Name:* ${userName.trim()}
+*📧 Email:* ${userEmail.trim()}
+*📞 Contact No.:* ${userContactNumber.trim()}
+*🏫 Grade/Class:* ${userGrade.trim() || 'Not specified'}
+*📚 Academic Board:* ${userBoard.trim() || 'Not specified'}
+*🎯 Area of Interest:* ${userInterest.trim() || 'Not specified'}
+*📍 Coaching Preference:* ${userPreference.trim() || 'Not specified'}
 
 *📝 Message Details:*
-*Subject:* ${userSubject.trim()}
-*Message:*
+*📌 Subject:* ${userSubject.trim()}
+*➡️ Message:*
 ${userMessage.trim()}
----
-_Looking forward to assisting them!_
+---------------------------------------
+_Looking forward to assisting them promptly!_
 `;
 
-    const encodedMessage = encodeURIComponent(formattedMessage);
+    // The encodeURIComponent function is crucial for emojis and special characters to render correctly.
+    // It converts the formatted message into a URL-safe string.
+    const encodedMessage = encodeURIComponent(formattedMessage.trim());
     const whatsappLink = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
 
     try {
@@ -288,12 +290,12 @@ _Looking forward to assisting them!_
                 className="bg-primary text-light-text font-bold py-2.5 px-6 rounded-lg hover:bg-blue-600 transition-colors duration-300 shadow-md text-base w-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
                 disabled={loading}
               >
-                {loading ? <LoadingSpinner /> : (
-                  <>
-                    <FaWhatsapp className="w-5 h-5" />
-                    <span>Send on WhatsApp</span>
-                  </>
-                )}
+              {loading ? <LoadingSpinner size="small" /> : (
+                <>
+                  <FaWhatsapp className="w-5 h-5" />
+                  <span>Send on WhatsApp</span>
+                </>
+              )}
               </button>
             </form>
           </div>

@@ -97,7 +97,7 @@ const ReviewForm = ({ onReviewAdded }) => {
           className="bg-primary text-light-text font-bold py-2 px-6 rounded-lg hover:bg-blue-600 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={loading}
         >
-          {loading ? <LoadingSpinner /> : 'Submit Review'}
+          {loading ? <LoadingSpinner size="small" /> : 'Submit Review'}
         </button>
       </form>
     </div>

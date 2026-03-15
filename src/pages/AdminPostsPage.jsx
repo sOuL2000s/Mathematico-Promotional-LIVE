@@ -4,22 +4,29 @@ import { collection, query, orderBy, getDocs, doc, deleteDoc } from 'firebase/fi
 import AdminPostForm from '../components/AdminPostForm';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorDisplay from '../components/ErrorDisplay';
-import { FaEdit, FaTrash, FaPlusSquare } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaPlusSquare, FaSortAlphaDown, FaSortAlphaUp, FaCalendarAlt } from 'react-icons/fa'; // Added sort icons
+
+const postCategories = ['all', 'blog', 'problem', 'puzzle', 'riddle', 'article', 'quiz'];
 
 const AdminPostsPage = () => {
-  const [posts, setPosts] = useState([]);
+  const [allPosts, setAllPosts] = useState([]); // Store all fetched posts
+  const [displayedPosts, setDisplayedPosts] = useState([]); // Posts after search/filter/sort
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [editingPost, setEditingPost] = useState(null); // null for create, post object for edit
-  const [formKey, setFormKey] = useState(0); // Key to force remount of AdminPostForm for reset
+  const [editingPost, setEditingPost] = useState(null);
+  const [formKey, setFormKey] = useState(0);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterCategory, setFilterCategory] = useState('all'); // For filtering by category in the table
+  const [sortKey, setSortKey] = useState('timestamp'); // Default sort key
+  const [sortOrder, setSortOrder] = useState('desc'); // 'asc' or 'desc'
 
-    const formatDate = (timestamp) => {
+  const formatDate = (timestamp) => {
     if (!timestamp) return 'N/A';
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
   };
 
-  const fetchPosts = useCallback(async () => {
+  const fetchAllPosts = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -29,7 +36,7 @@ const AdminPostsPage = () => {
         id: doc.id,
         ...doc.data(),
       }));
-      setPosts(fetchedPosts);
+      setAllPosts(fetchedPosts);
     } catch (err) {
       console.error("Error fetching posts:", err);
       setError("Failed to load posts.");
@@ -39,21 +46,68 @@ const AdminPostsPage = () => {
   }, []);
 
   useEffect(() => {
-    fetchPosts();
-  }, [fetchPosts]);
+    fetchAllPosts();
+  }, [fetchAllPosts]);
+
+  // Effect to filter and sort posts based on user input
+  useEffect(() => {
+    let tempPosts = [...allPosts];
+
+    // 1. Category Filter
+    if (filterCategory !== 'all') {
+      tempPosts = tempPosts.filter(post => post.category === filterCategory);
+    }
+
+    // 2. Search Filter
+    if (searchTerm) {
+      const lowerCaseSearchTerm = searchTerm.toLowerCase();
+      tempPosts = tempPosts.filter(post => {
+        const titleMatch = (post.title || '').toLowerCase().includes(lowerCaseSearchTerm);
+        const contentMatch = (post.content || '').toLowerCase().includes(lowerCaseSearchTerm);
+        const authorMatch = (post.author || '').toLowerCase().includes(lowerCaseSearchTerm);
+        const categoryMatch = (post.category || '').toLowerCase().includes(lowerCaseSearchTerm);
+        const optionsMatch = (post.options && Array.isArray(post.options)) ? post.options.some(option => (option || '').toLowerCase().includes(lowerCaseSearchTerm)) : false;
+        return titleMatch || contentMatch || authorMatch || categoryMatch || optionsMatch;
+      });
+    }
+
+    // 3. Sort
+    tempPosts.sort((a, b) => {
+      let valA, valB;
+
+      if (sortKey === 'timestamp') {
+        valA = a.timestamp ? a.timestamp.toDate() : new Date(0);
+        valB = b.timestamp ? b.timestamp.toDate() : new Date(0);
+      } else if (sortKey === 'likes') {
+        valA = a.likes || 0;
+        valB = b.likes || 0;
+      } else { // 'title', 'category'
+        valA = (a[sortKey] || '').toLowerCase();
+        valB = (b[sortKey] || '').toLowerCase();
+      }
+
+      if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
+      if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    setDisplayedPosts(tempPosts);
+  }, [allPosts, searchTerm, filterCategory, sortKey, sortOrder]);
+
 
   const handlePostSaved = () => {
     setEditingPost(null); // Exit edit mode
-    fetchPosts(); // Refresh posts list
+    fetchAllPosts(); // Refresh posts list (fetches all again)
   };
 
   const handlePostDeleted = async (deletedPostId) => {
     if (!window.confirm("Are you sure you want to delete this post?")) return;
     try {
-      setLoading(true); // Indicate loading for deletion
+      setLoading(true);
       await deleteDoc(doc(db, 'posts', deletedPostId));
-      setPosts(prevPosts => prevPosts.filter(p => p.id !== deletedPostId));
-      setEditingPost(null); // Clear form if the deleted post was being edited
+      // Optimistically update 'allPosts' to prevent a full re-fetch delay in UI
+      setAllPosts(prevPosts => prevPosts.filter(p => p.id !== deletedPostId));
+      setEditingPost(null);
       alert('Post deleted successfully!');
     } catch (err) {
       console.error("Error deleting post:", err);
@@ -72,12 +126,10 @@ const AdminPostsPage = () => {
         <button
           onClick={() => {
             if (editingPost === null) {
-              // If already in create mode, increment key to force remount and reset the form
               setFormKey(prevKey => prevKey + 1);
             } else {
-              // If in edit mode, switch to create mode, which will naturally reset via useEffect
               setEditingPost(null);
-              setFormKey(prevKey => prevKey + 1); // Also increment key to ensure a fresh form instance
+              setFormKey(prevKey => prevKey + 1);
             }
           }}
           className="bg-primary text-light-text font-bold py-2 px-6 rounded-lg hover:bg-blue-600 transition-colors duration-300 mb-6 inline-flex items-center shadow-md hover:shadow-lg"
@@ -86,7 +138,7 @@ const AdminPostsPage = () => {
         </button>
 
         <AdminPostForm
-          key={formKey} // Use key prop to force remount and reset when needed
+          key={formKey}
           post={editingPost}
           onPostSaved={handlePostSaved}
           onPostDeleted={handlePostDeleted}
@@ -95,6 +147,60 @@ const AdminPostsPage = () => {
 
       <section className="animate-fade-in-up animation-delay-200">
         <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-light-text mt-8 md:mt-12 mb-4 md:mb-6">Existing Posts</h3>
+
+        {/* Controls: Search, Category Filter, Sort */}
+        <div className="flex flex-col md:flex-row items-center justify-start gap-4 mb-8">
+          {/* Search Bar */}
+          <input
+            type="text"
+            placeholder="Search posts..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full md:w-auto flex-grow p-2.5 rounded-lg bg-dark-background text-light-text border border-secondary focus:outline-none focus:ring-2 focus:ring-primary placeholder-gray-text"
+          />
+
+          {/* Category Filter */}
+          <div className="relative w-full md:w-auto">
+            <select
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+              className="w-full md:w-auto appearance-none p-2.5 rounded-lg bg-dark-background text-light-text border border-secondary focus:outline-none focus:ring-2 focus:ring-primary pr-10"
+            >
+              {postCategories.map(cat => (
+                <option key={cat} value={cat}>
+                  {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                </option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-primary">
+              <FaCalendarAlt /> {/* Generic filter icon */}
+            </div>
+          </div>
+
+          {/* Sort Dropdown */}
+          <div className="relative w-full md:w-auto">
+            <select
+              value={`${sortKey}-${sortOrder}`}
+              onChange={(e) => {
+                const [key, order] = e.target.value.split('-');
+                setSortKey(key);
+                setSortOrder(order);
+              }}
+              className="w-full md:w-auto appearance-none p-2.5 rounded-lg bg-dark-background text-light-text border border-secondary focus:outline-none focus:ring-2 focus:ring-primary pr-10"
+            >
+              <option value="timestamp-desc">Newest First</option>
+              <option value="timestamp-asc">Oldest First</option>
+              <option value="title-asc">Title (A-Z)</option>
+              <option value="title-desc">Title (Z-A)</option>
+              <option value="likes-desc">Likes (High to Low)</option>
+              <option value="likes-asc">Likes (Low to High)</option>
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-primary">
+              {sortOrder === 'asc' ? <FaSortAlphaUp /> : <FaSortAlphaDown />}
+            </div>
+          </div>
+        </div>
+
         {error && <ErrorDisplay message={error} />}
         {loading ? (
           <LoadingSpinner />
@@ -111,12 +217,12 @@ const AdminPostsPage = () => {
                 </tr>
               </thead>
               <tbody className="text-secondary text-xs sm:text-sm font-light">
-                {posts.length === 0 ? (
+                {displayedPosts.length === 0 ? (
                   <tr>
-                    <td colSpan="5" className="py-4 text-center text-gray-text">No posts found.</td>
+                    <td colSpan="5" className="py-4 text-center text-gray-text">No posts found matching your criteria.</td>
                   </tr>
                 ) : (
-                  posts.map((post) => (
+                  displayedPosts.map((post) => (
                     <tr key={post.id} className="border-b border-secondary hover:bg-dark-background transition-colors duration-150">
                       <td className="py-3 px-4 sm:px-6 text-left whitespace-nowrap">
                         <span className="font-medium text-light-text">{post.title}</span>

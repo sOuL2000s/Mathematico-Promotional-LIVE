@@ -104,7 +104,7 @@ const AdminLoginPage = () => {
             className="bg-primary text-light-text font-bold py-3 px-8 rounded-lg w-full hover:bg-blue-600 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-lg shadow-md hover:shadow-lg"
             disabled={loading}
           >
-            {loading ? <LoadingSpinner /> : 'Log In'}
+            {loading ? <LoadingSpinner size="small" /> : 'Log In'}
           </button>
         </form>
         <p className="text-center text-gray-text text-sm mt-6">

@@ -58,6 +58,8 @@ const Navbar = () => {
             <NavLink to="/about" onClick={closeMenu}>About Us</NavLink>            
             <NavLink to="/instructors" onClick={closeMenu}>Instructors</NavLink> {/* New NavLink */}
             <NavLink to="/courses" onClick={closeMenu}>Courses</NavLink>
+            <NavLink to="/books" onClick={closeMenu}>Books</NavLink> {/* New NavLink */}
+            <NavLink to="/videos" onClick={closeMenu}>Videos</NavLink> {/* New NavLink */}
             <NavLink to="/posts" onClick={closeMenu}>Posts</NavLink>
             <NavLink to="/reviews" onClick={closeMenu}>Reviews</NavLink>
             <NavLink to="/contact" onClick={closeMenu}>Contact</NavLink>

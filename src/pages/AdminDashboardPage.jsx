@@ -4,7 +4,7 @@ import { db } from '../firebase';
 import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorDisplay from '../components/ErrorDisplay';
-import { FaNewspaper, FaStar, FaCommentDots, FaBookOpen } from 'react-icons/fa';
+import { FaNewspaper, FaStar, FaCommentDots, FaBookOpen, FaBook, FaVideo } from 'react-icons/fa';
 
 const AdminDashboardPage = () => {
   const [stats, setStats] = useState({
@@ -133,6 +133,12 @@ const AdminDashboardPage = () => {
           </Link>
           <Link to="/admin/courses" className="bg-primary text-light-text py-3 px-6 rounded-lg hover:bg-blue-600 transition-colors flex items-center text-lg font-semibold shadow-md">
             <FaBookOpen className="mr-2" /> Manage Courses
+          </Link>
+          <Link to="/admin/books" className="bg-primary text-light-text py-3 px-6 rounded-lg hover:bg-blue-600 transition-colors flex items-center text-lg font-semibold shadow-md">
+            <FaBook className="mr-2" /> Manage Books
+          </Link>
+          <Link to="/admin/videos" className="bg-primary text-light-text py-3 px-6 rounded-lg hover:bg-blue-600 transition-colors flex items-center text-lg font-semibold shadow-md">
+            <FaVideo className="mr-2" /> Manage Videos
           </Link>
         </div>
       </section>

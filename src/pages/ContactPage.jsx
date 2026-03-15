@@ -13,29 +13,6 @@ const ContactPage = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
 
-  // Placeholder for an actual email sending function (requires backend)
-  const sendContactEmail = async (formData) => {
-    // In a real application, you would send this data to a backend endpoint
-    // (e.g., Firebase Cloud Function, custom Node.js/Python server, or a service like EmailJS/Formspree).
-    // The backend would then handle sending the email securely.
-    // Client-side direct email sending (e.g., mailto) is not "hidden" and not what's requested.
-    // For this demonstration, we'll simulate an asynchronous backend call.
-
-    console.log("Simulating sending email with data:", formData);
-
-    return new Promise(resolve => {
-      setTimeout(() => {
-        // Simulate success
-        console.log("Email simulated successfully sent!");
-        resolve({ success: true, message: "Your message has been sent successfully!" });
-
-        // // Simulate error (uncomment to test error state)
-        // console.error("Simulating email send failure!");
-        // reject(new Error("Failed to send message. Please try again."));
-      }, 2000); // Simulate network delay
-    });
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -48,16 +25,40 @@ const ContactPage = () => {
       return;
     }
 
+    // Recipient email address for Mathematico inquiries
+    const recipientEmail = "dipanjanchatterjee23@gmail.com"; 
+
+    // Encode subject and body for the URL
+    const encodedSubject = encodeURIComponent(`Mathematico Website Inquiry: ${subject.trim()}`);
+    const encodedBody = encodeURIComponent(
+      `Dear Mathematico Team,\n\n` +
+      `You have received a new message from your website's contact form.\n\n` +
+      `Sender Name: ${name.trim()}\n` +
+      `Sender Email: ${email.trim()}\n\n` +
+      `Message:\n${message.trim()}\n\n` +
+      `--\n` +
+      `This message was sent via Mathematico website contact form.`
+    );
+
+    // Construct the Gmail compose URL
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${recipientEmail}&su=${encodedSubject}&body=${encodedBody}`;
+    
+    // Optionally, you could also construct a mailto link as a fallback or alternative
+    // const mailtoLink = `mailto:${recipientEmail}?subject=${encodedSubject}&body=${encodedBody}`;
+
     try {
-      await sendContactEmail({ name, email, subject, message });
+      // Open the Gmail compose window in a new tab
+      window.open(gmailUrl, "_blank");
+
+      // Reset form and show success message, assuming user will send the email from Gmail
       setSuccess(true);
       setName('');
       setEmail('');
       setSubject('');
       setMessage('');
     } catch (err) {
-      console.error("Contact form submission error:", err);
-      setError(err.message || "Something went wrong. Please try again.");
+      console.error("Failed to open Gmail compose window:", err);
+      setError("Could not open Gmail. Please ensure you are logged into Gmail or try a direct email if the issue persists.");
     } finally {
       setLoading(false);
     }
@@ -135,7 +136,7 @@ const ContactPage = () => {
           {success && (
             <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative my-4" role="alert">
               <strong className="font-bold">Success!</strong>
-              <span className="block sm:inline ml-2">Your message has been sent successfully. We will get back to you shortly!</span>
+              <span className="block sm:inline ml-2">Your email client should have opened with the message pre-filled. Please click 'Send' from there.</span>
             </div>
           )}
           <form onSubmit={handleSubmit} className="space-y-5">

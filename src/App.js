@@ -20,7 +20,13 @@ import AdminReviewsPage from './pages/AdminReviewsPage'; // Import AdminReviewsP
 import AdminCommentsPage from './pages/AdminCommentsPage'; // Import AdminCommentsPage
 import AdminCoursesPage from './pages/AdminCoursesPage'; // Import AdminCoursesPage
 import AdminSettingsPage from './pages/AdminSettingsPage'; // Import AdminSettingsPage for global app settings
+import AdminBooksPage from './pages/AdminBooksPage'; // Import new AdminBooksPage
+import AdminVideosPage from './pages/AdminVideosPage'; // Import new AdminVideosPage
+
 import InstructorsPage from './pages/InstructorsPage'; // Import the new InstructorsPage
+import BooksPage from './pages/BooksPage'; // Import new BooksPage
+import VideosPage from './pages/VideosPage'; // Import new VideosPage
+
 import { WhatsAppProvider } from './context/WhatsAppContext'; // Import WhatsAppProvider
 import WhatsAppButton from './components/WhatsAppButton'; // Import the new WhatsAppButton
 
@@ -37,6 +43,8 @@ function App() {
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/instructors" element={<InstructorsPage />} /> {/* New route for instructors page */}
                 <Route path="/courses" element={<CoursesPage />} />
+                <Route path="/books" element={<BooksPage />} /> {/* New route for books page */}
+                <Route path="/videos" element={<VideosPage />} /> {/* New route for videos page */}
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/posts" element={<PostsPage />} />
                 <Route path="/posts/:id" element={<SinglePostPage />} />
@@ -51,6 +59,8 @@ function App() {
                     <Route path="reviews" element={<AdminReviewsPage />} />
                     <Route path="comments" element={<AdminCommentsPage />} />
                     <Route path="courses" element={<AdminCoursesPage />} />
+                    <Route path="books" element={<AdminBooksPage />} /> {/* New admin route for books */}
+                    <Route path="videos" element={<AdminVideosPage />} /> {/* New admin route for videos */}
                     <Route path="settings" element={<AdminSettingsPage />} /> {/* New route for app settings */}
                   </Route>
                 </Route>

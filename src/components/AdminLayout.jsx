@@ -3,7 +3,7 @@ import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
-import { MdDashboard, MdPostAdd, MdRateReview, MdComment, MdOutlineLibraryBooks, MdLogout, MdClose, MdSettings } from 'react-icons/md'; // Added MdSettings
+import { MdDashboard, MdPostAdd, MdRateReview, MdComment, MdOutlineLibraryBooks, MdLogout, MdClose, MdSettings, MdVideoLibrary, MdBook } from 'react-icons/md'; // Added MdSettings, MdVideoLibrary, MdBook
 import { GiHamburgerMenu } from "react-icons/gi";
 // Removed unused icons: FaAngleDoubleLeft, FaAngleDoubleRight
 
@@ -99,6 +99,8 @@ const AdminLayout = () => {
           <NavItem to="/admin/dashboard" icon={MdDashboard} label="Dashboard" closeSidebar={() => setIsMobileSidebarOpen(false)} />
           <NavItem to="/admin/posts" icon={MdPostAdd} label="Manage Posts" closeSidebar={() => setIsMobileSidebarOpen(false)} />
           <NavItem to="/admin/courses" icon={MdOutlineLibraryBooks} label="Manage Courses" closeSidebar={() => setIsMobileSidebarOpen(false)} />
+          <NavItem to="/admin/books" icon={MdBook} label="Manage Books" closeSidebar={() => setIsMobileSidebarOpen(false)} /> {/* New Nav Item */}
+          <NavItem to="/admin/videos" icon={MdVideoLibrary} label="Manage Videos" closeSidebar={() => setIsMobileSidebarOpen(false)} /> {/* New Nav Item */}
           <NavItem to="/admin/reviews" icon={MdRateReview} label="Moderate Reviews" closeSidebar={() => setIsMobileSidebarOpen(false)} />
           <NavItem to="/admin/comments" icon={MdComment} label="Moderate Comments" closeSidebar={() => setIsMobileSidebarOpen(false)} />
           <NavItem to="/admin/settings" icon={MdSettings} label="App Settings" closeSidebar={() => setIsMobileSidebarOpen(false)} /> {/* New Nav Item */}

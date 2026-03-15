@@ -1,66 +1,105 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { db } from '../firebase';
-import { collection, query, orderBy, getDocs, where } from 'firebase/firestore'; // Added 'where'
+import { collection, query, orderBy, getDocs } from 'firebase/firestore'; // Removed 'where'
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorDisplay from '../components/ErrorDisplay';
-import { FaCheckCircle, FaBookOpen, FaAward, FaPuzzlePiece, FaWhatsapp } from 'react-icons/fa'; // Importing icons
+import { FaCheckCircle, FaBookOpen, FaAward, FaPuzzlePiece, FaWhatsapp, FaSortAlphaDown, FaSortAlphaUp } from 'react-icons/fa'; // Importing icons
 import { useWhatsApp } from '../context/WhatsAppContext'; // Import useWhatsApp context
 
-const courseLevels = ['Beginner', 'Intermediate', 'Advanced', 'All Levels']; // Levels used for filtering
+const courseLevels = ['all', 'Beginner', 'Intermediate', 'Advanced', 'All Levels']; // Levels used for filtering
 const courseCategories = ['all', 'Algebra', 'Geometry', 'Calculus', 'Competitive', 'Foundational', 'Advanced Topics'];
 
 const CoursesPage = () => {
-  const [courses, setCourses] = useState([]);
+  const [allCourses, setAllCourses] = useState([]); // Store all fetched courses
+  const [displayedCourses, setDisplayedCourses] = useState([]); // Courses after search/filter/sort
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState('all'); // New state for category filter
-  const [selectedLevel, setSelectedLevel] = useState('all'); // New state for level filter
-  const { openModal } = useWhatsApp(); // Access openModal from context
-
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedLevel, setSelectedLevel] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortKey, setSortKey] = useState('createdAt'); // Default sort key
+  const [sortOrder, setSortOrder] = useState('asc'); // 'asc' or 'desc'
+  const { openModal } = useWhatsApp();
 
   const iconsMap = {
     'Beginner': FaBookOpen,
     'Intermediate': FaAward,
     'Advanced': FaAward,
     'All Levels': FaPuzzlePiece,
-    // Add more mappings if needed, or create a default
   };
 
-  const fetchCourses = useCallback(async () => {
+  const fetchAllCourses = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      let q = collection(db, 'courses');
-      
-      if (selectedCategory !== 'all') {
-        q = query(q, where('category', '==', selectedCategory));
-      }
-      if (selectedLevel !== 'all') {
-        q = query(q, where('level', '==', selectedLevel));
-      }
-
-      q = query(q, orderBy('createdAt', 'asc')); // Assuming 'createdAt' field
+      const q = query(collection(db, 'courses'), orderBy('createdAt', 'asc'));
       const querySnapshot = await getDocs(q);
       const fetchedCourses = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
       }));
-      setCourses(fetchedCourses);
+      setAllCourses(fetchedCourses);
     } catch (err) {
       console.error("Error fetching courses:", err);
       setError("Failed to load courses. Please try again later.");
     } finally {
       setLoading(false);
     }
-  }, [selectedCategory, selectedLevel]); // Add selectedCategory and selectedLevel to dependencies
+  }, []);
 
   useEffect(() => {
-    fetchCourses();
-  }, [fetchCourses]);
+    fetchAllCourses();
+  }, [fetchAllCourses]);
 
-  if (loading) return <LoadingSpinner />;
-  if (error) return <ErrorDisplay message={error} />;
+  // Effect to filter and sort courses based on user input
+  useEffect(() => {
+    let tempCourses = [...allCourses];
+
+    // 1. Category Filter
+    if (selectedCategory !== 'all') {
+      tempCourses = tempCourses.filter(course => course.category === selectedCategory);
+    }
+
+    // 2. Level Filter
+    if (selectedLevel !== 'all') {
+      tempCourses = tempCourses.filter(course => course.level === selectedLevel);
+    }
+
+    // 3. Search Filter
+    if (searchTerm) {
+      const lowerCaseSearchTerm = searchTerm.toLowerCase();
+      tempCourses = tempCourses.filter(course => {
+        const titleMatch = (course.title || '').toLowerCase().includes(lowerCaseSearchTerm);
+        const descriptionMatch = (course.description || '').toLowerCase().includes(lowerCaseSearchTerm);
+        const levelMatch = (course.level || '').toLowerCase().includes(lowerCaseSearchTerm);
+        const categoryMatch = (course.category || '').toLowerCase().includes(lowerCaseSearchTerm);
+        const featuresMatch = (course.features && Array.isArray(course.features)) ? course.features.some(feature => (feature || '').toLowerCase().includes(lowerCaseSearchTerm)) : false;
+        const buttonTextMatch = (course.buttonText || '').toLowerCase().includes(lowerCaseSearchTerm);
+        return titleMatch || descriptionMatch || levelMatch || categoryMatch || featuresMatch || buttonTextMatch;
+      });
+    }
+
+    // 4. Sort
+    tempCourses.sort((a, b) => {
+      let valA, valB;
+
+      if (sortKey === 'createdAt') {
+        valA = a.createdAt ? a.createdAt.toDate() : new Date(0);
+        valB = b.createdAt ? b.createdAt.toDate() : new Date(0);
+      } else { // 'title', 'level', 'category'
+        valA = (a[sortKey] || '').toLowerCase();
+        valB = (b[sortKey] || '').toLowerCase();
+      }
+
+      if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
+      if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    setDisplayedCourses(tempCourses);
+  }, [allCourses, selectedCategory, selectedLevel, searchTerm, sortKey, sortOrder]);
+
 
   return (
     <div className="container mx-auto py-8 md:py-12 px-4 min-h-screen">
@@ -69,57 +108,88 @@ const CoursesPage = () => {
           Mathematico offers a diverse range of courses designed to cater to students at every stage of their mathematical journey. From foundational concepts to advanced competitive training, we have a program for you.
         </p>
 
-      {/* Category Filter */}
-      <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mb-8 md:mb-10 animate-fade-in-up animation-delay-200">
-        {courseCategories.map(cat => (
-          <button
-            key={cat}
-            onClick={() => setSelectedCategory(cat)}
-            className={`px-4 sm:px-6 py-1.5 sm:py-2.5 rounded-full text-sm sm:text-lg font-semibold transition-all duration-300 whitespace-nowrap
-              ${selectedCategory === cat
-                ? 'bg-accent text-dark-background shadow-md hover:bg-cyan-400'
-                : 'bg-secondary text-dark-background hover:bg-light-text'
-              }`}
+      {/* Controls: Search, Category Filter, Level Filter, Sort */}
+      <div className="flex flex-col md:flex-row items-center justify-center gap-4 mb-8 md:mb-10 animate-fade-in-up animation-delay-200">
+        {/* Search Bar */}
+        <input
+          type="text"
+          placeholder="Search courses..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full md:w-auto flex-grow p-2.5 rounded-lg bg-dark-background text-light-text border border-secondary focus:outline-none focus:ring-2 focus:ring-primary placeholder-gray-text"
+        />
+
+        {/* Category Filter */}
+        <div className="flex flex-wrap justify-center gap-2 sm:gap-2 w-full md:w-auto">
+          {courseCategories.map(cat => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-sm sm:text-base font-semibold transition-all duration-300 whitespace-nowrap
+                ${selectedCategory === cat
+                  ? 'bg-accent text-dark-background shadow-md hover:bg-cyan-400'
+                  : 'bg-secondary text-dark-background hover:bg-light-text'
+                }`}
+            >
+              {cat.charAt(0).toUpperCase() + cat.slice(1)}
+            </button>
+          ))}
+        </div>
+
+        {/* Level Filter */}
+        <div className="relative w-full md:w-auto">
+          <select
+            value={selectedLevel}
+            onChange={(e) => setSelectedLevel(e.target.value)}
+            className="w-full md:w-auto appearance-none p-2.5 rounded-lg bg-dark-background text-light-text border border-secondary focus:outline-none focus:ring-2 focus:ring-primary pr-10"
           >
-            {cat.charAt(0).toUpperCase() + cat.slice(1)}
-          </button>
-        ))}
+            {courseLevels.map(level => (
+              <option key={level} value={level}>
+                {level === 'all' ? 'All Levels' : level}
+              </option>
+            ))}
+          </select>
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-primary">
+            <FaSortAlphaDown /> {/* Generic icon for filter dropdown */}
+          </div>
+        </div>
+
+        {/* Sort Dropdown */}
+        <div className="relative w-full md:w-auto">
+          <select
+            value={`${sortKey}-${sortOrder}`}
+            onChange={(e) => {
+              const [key, order] = e.target.value.split('-');
+              setSortKey(key);
+              setSortOrder(order);
+            }}
+            className="w-full md:w-auto appearance-none p-2.5 rounded-lg bg-dark-background text-light-text border border-secondary focus:outline-none focus:ring-2 focus:ring-primary pr-10"
+          >
+            <option value="createdAt-desc">Newest First</option>
+            <option value="createdAt-asc">Oldest First</option>
+            <option value="title-asc">Title (A-Z)</option>
+            <option value="title-desc">Title (Z-A)</option>
+            <option value="level-asc">Level (Asc)</option>
+            <option value="level-desc">Level (Desc)</option>
+            <option value="category-asc">Category (A-Z)</option>
+            <option value="category-desc">Category (Z-A)</option>
+          </select>
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-primary">
+            {sortOrder === 'asc' ? <FaSortAlphaUp /> : <FaSortAlphaDown />}
+          </div>
+        </div>
       </div>
 
-      {/* Level Filter */}
-      <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mb-8 md:mb-10 animate-fade-in-up animation-delay-200">
-        <button
-          onClick={() => setSelectedLevel('all')}
-          className={`px-4 sm:px-6 py-1.5 sm:py-2.5 rounded-full text-sm sm:text-lg font-semibold transition-all duration-300 whitespace-nowrap
-            ${selectedLevel === 'all'
-              ? 'bg-accent text-dark-background shadow-md hover:bg-cyan-400'
-              : 'bg-secondary text-dark-background hover:bg-light-text'
-            }`}
-        >
-          All Levels
-        </button>
-        {courseLevels.filter(level => level !== 'All Levels').map(level => (
-          <button
-            key={level}
-            onClick={() => setSelectedLevel(level)}
-            className={`px-4 sm:px-6 py-1.5 sm:py-2.5 rounded-full text-sm sm:text-lg font-semibold transition-all duration-300 whitespace-nowrap
-              ${selectedLevel === level
-                ? 'bg-accent text-dark-background shadow-md hover:bg-cyan-400'
-                : 'bg-secondary text-dark-background hover:bg-light-text'
-              }`}
-          >
-            {level}
-          </button>
-        ))}
-      </div>
+      {loading && <LoadingSpinner />}
+      {error && <ErrorDisplay message={error} />}
 
-      {!loading && courses.length === 0 && !error && (
-        <p className="text-center text-secondary text-base sm:text-xl mt-8 animate-fade-in">No courses available at the moment.</p>
+      {!loading && displayedCourses.length === 0 && !error && (
+        <p className="text-center text-secondary text-base sm:text-xl mt-8 animate-fade-in">No courses found matching your criteria.</p>
       )}
 
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-        {courses.map((course, index) => {
-          const CourseIcon = iconsMap[course.level] || FaBookOpen; // Default icon if level not mapped
+        {displayedCourses.map((course, index) => {
+          const CourseIcon = iconsMap[course.level] || FaBookOpen;
           return (
             <div key={course.id} className="group bg-medium-dark rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-secondary flex flex-col animate-fade-in-up transform hover:-translate-y-2 hover:border-accent" style={{ animationDelay: `${index * 0.1}s` }}>
               {course.imageUrl && <img src={course.imageUrl} alt={course.title} className="w-full h-48 sm:h-56 object-cover object-center group-hover:scale-105 transition-transform duration-300" />}
@@ -140,7 +210,6 @@ const CoursesPage = () => {
                     </li>
                   ))}
                 </ul>
-                {/* Conditional rendering for enroll button based on useCustomEnrollButton */}
                 {course.useCustomEnrollButton && course.buttonText && course.buttonLink ? (
                   <a href={course.buttonLink} target="_blank" rel="noopener noreferrer" className="mt-4 sm:mt-6 bg-accent text-dark-background font-bold py-2.5 px-5 sm:px-6 rounded-lg hover:bg-cyan-400 transition-all duration-300 transform hover:scale-105 shadow-md self-start text-sm sm:text-base">
                     {course.buttonText}
@@ -148,7 +217,7 @@ const CoursesPage = () => {
                 ) : (
                   <button
                     onClick={(e) => {
-                      e.preventDefault(); // Prevent navigating if this card is wrapped in a Link
+                      e.preventDefault();
                       openModal({
                         subject: `Inquiry about ${course.title} Course`,
                         userInterest: course.title
