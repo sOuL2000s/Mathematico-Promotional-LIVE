@@ -18,12 +18,8 @@ const SinglePostPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [likeLoading, setLikeLoading] = useState(false);
-  const [hasLiked, setHasLiked] = useState(false); // New state for local like status
-
   // New states for quiz functionality
-  const [userVoted, setUserVoted] = useState(false);
   const [votingLoading, setVotingLoading] = useState(false);
-  const [selectedVoteOption, setSelectedVoteOption] = useState(null); // The option the user chose
 
   const formatDate = (timestamp) => {
     if (!timestamp) return 'No Date';
@@ -43,17 +39,7 @@ const SinglePostPage = () => {
         const fetchedPost = { id: postSnap.id, ...postSnap.data() };
         setPost(fetchedPost);
 
-        // Check local storage for like status
-        const likedPosts = JSON.parse(localStorage.getItem('likedPosts')) || {};
-        setHasLiked(!!likedPosts[id]);
-
-        // Check local storage for quiz vote status
-        if (fetchedPost.category === 'quiz') {
-            const votedQuizzes = JSON.parse(localStorage.getItem('votedQuizzes')) || {};
-            setUserVoted(!!votedQuizzes[id]);
-            // If user voted, we might want to store their choice too, but for poll display, just knowing they voted is enough.
-            // For now, we don't store the exact option chosen by anonymous users in local storage, only that they voted.
-        }
+        // No client-side like/vote tracking needed.
 
         // Fetch comments for this post
         const commentsQuery = query(collection(db, 'posts', id, 'comments'), orderBy('timestamp', 'desc'));
@@ -79,25 +65,19 @@ const SinglePostPage = () => {
   }, [fetchPostAndComments]);
 
   const handleLike = async () => {
-    if (likeLoading || hasLiked) return; // Prevent multiple likes and liking if already liked
+    if (likeLoading) return; // Prevent multiple clicks while loading
     setLikeLoading(true);
     try {
       const postRef = doc(db, 'posts', id);
       await updateDoc(postRef, {
         likes: increment(1),
       });
+      // Optimistically update the UI with the new like count
       setPost(prevPost => ({ ...prevPost, likes: (prevPost.likes || 0) + 1 }));
-
-      // Update local storage
-      const likedPosts = JSON.parse(localStorage.getItem('likedPosts')) || {};
-      likedPosts[id] = true;
-      localStorage.setItem('likedPosts', JSON.stringify(likedPosts));
-      setHasLiked(true); // Update local state to reflect like
-      alert('Post liked!');
 
     } catch (err) {
       console.error("Error liking post:", err);
-      alert("Failed to like post. Please try again.");
+      // Optionally provide user feedback for an error, but not for every successful like
     } finally {
       setLikeLoading(false);
     }
@@ -121,7 +101,7 @@ const SinglePostPage = () => {
   };
 
   const handleVote = async (option) => {
-      if (userVoted || votingLoading) return; // Prevent multiple votes
+      if (votingLoading) return; // Prevent multiple clicks while loading
       setVotingLoading(true);
       setError(null);
 
@@ -139,17 +119,9 @@ const SinglePostPage = () => {
               return { ...prevPost, optionCounts: newOptionCounts };
           });
 
-          // Mark quiz as voted in local storage
-          const votedQuizzes = JSON.parse(localStorage.getItem('votedQuizzes')) || {};
-          votedQuizzes[id] = true;
-          localStorage.setItem('votedQuizzes', JSON.stringify(votedQuizzes));
-          setUserVoted(true); // Update local state
-          setSelectedVoteOption(option); // Store the chosen option for visual feedback
-          alert(`Voted for "${option}"!`);
-
       } catch (err) {
           console.error("Error submitting vote:", err);
-          setError("Failed to submit vote. Please try again.");
+          // Optionally provide user feedback for an error, but not for every successful vote
       } finally {
           setVotingLoading(false);
       }
@@ -223,52 +195,38 @@ const SinglePostPage = () => {
 
                 <h3 className="text-xl sm:text-2xl font-semibold text-light-text mb-4">Choose your answer:</h3>
 
-                {userVoted ? (
-                    // Display results if user has voted
-                    <div className="space-y-3">
-                        {post.options.map((option, index) => {
-                            const totalVotes = Object.values(post.optionCounts || {}).reduce((sum, count) => sum + count, 0);
-                            const votesForOption = post.optionCounts?.[option] || 0;
-                            const percentage = totalVotes > 0 ? ((votesForOption / totalVotes) * 100).toFixed(1) : 0;
-                            const isSelected = option === selectedVoteOption; // Highlight the user's selected option
+                <div className="space-y-3">
+                    {post.options.map((option, index) => {
+                        const totalVotes = Object.values(post.optionCounts || {}).reduce((sum, count) => sum + count, 0);
+                        const votesForOption = post.optionCounts?.[option] || 0;
+                        const percentage = totalVotes > 0 ? ((votesForOption / totalVotes) * 100).toFixed(1) : 0;
 
-                            return (
-                                <div key={index} className="flex flex-col">
-                                    <div className="flex justify-between items-center mb-1">
-                                        <span className={`font-semibold text-light-text ${isSelected ? 'text-accent' : ''}`}>
-                                            {option}
-                                        </span>
-                                        <span className="text-gray-text text-sm">{votesForOption} votes ({percentage}%)</span>
-                                    </div>
-                                    <div className="w-full bg-medium-dark rounded-full h-2.5">
-                                        <div
-                                            className="bg-primary h-2.5 rounded-full transition-all duration-500 ease-out"
-                                            style={{ width: `${percentage}%` }}
-                                        ></div>
-                                    </div>
+                        return (
+                            <div key={index} className="flex flex-col group">
+                                <button
+                                    onClick={() => handleVote(option)}
+                                    className="bg-primary text-light-text font-semibold py-2 px-3 rounded-t-lg hover:bg-blue-600 transition-colors duration-300 shadow-md text-base text-left flex justify-between items-center disabled:opacity-50 disabled:cursor-not-allowed"
+                                    disabled={votingLoading}
+                                >
+                                    <span>{votingLoading ? <LoadingSpinner size="small" /> : option}</span>
+                                    {/* Display percentage next to button always */}
+                                    <span className="text-sm text-gray-text group-hover:text-light-text transition-colors duration-300">
+                                      {votesForOption} votes ({percentage}%)
+                                    </span>
+                                </button>
+                                <div className="w-full bg-medium-dark rounded-b-lg h-2.5 overflow-hidden">
+                                    <div
+                                        className="bg-accent h-2.5 rounded-b-lg transition-all duration-500 ease-out"
+                                        style={{ width: `${percentage}%` }}
+                                    ></div>
                                 </div>
-                            );
-                        })}
-                        <p className="text-secondary text-center text-sm mt-4">Thank you for your vote! You have already participated in this poll.</p>
-                    </div>
-                ) : (
-                    // Display options as buttons if user hasn't voted
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {post.options.map((option, index) => (
-                            <button
-                                key={index}
-                                onClick={() => handleVote(option)}
-                                className="bg-primary text-light-text font-semibold py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-md text-base"
-                                disabled={votingLoading || userVoted}
-                            >
-                                {votingLoading && selectedVoteOption === option ? <LoadingSpinner size="small" /> : option}
-                            </button>
-                        ))}
-                        {votingLoading && <LoadingSpinner />}
-                        {error && <ErrorDisplay message={error} />}
-                        <p className="text-gray-text text-sm col-span-full mt-2 text-center">Vote once per device.</p>
-                    </div>
-                )}
+                            </div>
+                        );
+                    })}
+                    {votingLoading && <LoadingSpinner />}
+                    {error && <ErrorDisplay message={error} />}
+                    <p className="text-gray-text text-sm col-span-full mt-2 text-center">You can vote multiple times for any option.</p>
+                </div>
             </div>
         )}
 
@@ -289,9 +247,9 @@ const SinglePostPage = () => {
           <button
             onClick={handleLike}
             className={`flex items-center space-x-1 sm:space-x-2 font-semibold transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base
-              ${hasLiked ? 'text-red-500 cursor-not-allowed' : 'text-primary hover:text-blue-600'}`}
-            disabled={likeLoading || hasLiked}
-            title={hasLiked ? "You've already liked this post" : "Like this post"}
+              text-primary hover:text-blue-600`}
+            disabled={likeLoading}
+            title={"Like this post"}
           >
             <FaHeart className="w-5 h-5 sm:w-6 sm:h-6" />
             <span>Like ({post.likes || 0})</span>
