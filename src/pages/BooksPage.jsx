@@ -3,7 +3,7 @@ import { db } from '../firebase';
 import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorDisplay from '../components/ErrorDisplay';
-import { FaBookOpen, FaSortAlphaDown, FaSortAlphaUp, FaCalendarAlt } from 'react-icons/fa'; // Icons for books and sorting
+import { FaBookOpen, FaSortAlphaDown, FaSortAlphaUp } from 'react-icons/fa'; // Icons for books and sorting
 import { Link } from 'react-router-dom'; // Import Link
 
 const BooksPage = () => {
