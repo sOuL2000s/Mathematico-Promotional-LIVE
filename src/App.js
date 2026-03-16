@@ -6,6 +6,7 @@ import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
 import { WhatsAppProvider } from './context/WhatsAppContext';
 import WhatsAppButton from './components/WhatsAppButton';
+import Chatbot from './components/Chatbot'; // Import the new Chatbot component
 import LoadingSpinner from './components/LoadingSpinner';
 import ScrollToTop from './components/ScrollToTop'; // Import the new ScrollToTop component
 
@@ -75,6 +76,7 @@ function App() {
               </Suspense> {/* Close Suspense */}
             </main>
             <Footer />
+            <Chatbot /> {/* Render the Chatbot component */}
             <WhatsAppButton />
           </div>
         </WhatsAppProvider>

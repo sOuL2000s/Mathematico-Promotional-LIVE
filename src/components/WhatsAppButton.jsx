@@ -106,8 +106,8 @@ _Looking forward to assisting them promptly!_
     <>
       {/* The floating button to open the WhatsApp modal */}
       {!isModalOpen && (
-        <button
-          onClick={() => {
+      <button
+        onClick={() => {
             // Only open if the modal isn't already open
             if (!isModalOpen) openModal({
               subject: '',
@@ -121,7 +121,7 @@ _Looking forward to assisting them promptly!_
               userPreference: ''
             });
           }} // Pass empty data to effectively open with blank form
-          className="fixed bottom-6 right-6 bg-accent text-dark-background p-4 rounded-full shadow-lg hover:scale-110 transition-all duration-300 ease-in-out z-50 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-dark-background group"
+          className="fixed bottom-6 right-6 bg-accent text-dark-background p-4 rounded-full shadow-lg hover:scale-110 transition-all duration-300 ease-in-out z-40 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-dark-background group"
           aria-label="Contact us via WhatsApp"
         >
           <FaWhatsapp className="w-8 h-8 group-hover:animate-pulse" />

@@ -7,6 +7,7 @@ import { FaTimes } from 'react-icons/fa'; // Import the close icon
 
 const AdminSettingsForm = ({ onSettingsSaved }) => {
   const [founderImageUrl, setFounderImageUrl] = useState('');
+  const [geminiApiKey, setGeminiApiKey] = useState(''); // New state for Gemini API Key
   const [fileToUpload, setFileToUpload] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(''); // Stores URL for preview (local or existing Cloudinary URL)
   const [loading, setLoading] = useState(false);
@@ -29,10 +30,12 @@ const AdminSettingsForm = ({ onSettingsSaved }) => {
           const data = settingsSnap.data();
           setFounderImageUrl(data.founderImageUrl || '');
           setPreviewUrl(data.founderImageUrl || '');
+          setGeminiApiKey(data.geminiApiKey || ''); // Fetch Gemini API key
         } else {
           // If no settings document exists, initialize empty states
           setFounderImageUrl('');
           setPreviewUrl('');
+          setGeminiApiKey(''); // Initialize empty
         }
       } catch (err) {
         console.error("Error fetching settings: ", err);
@@ -129,6 +132,7 @@ const AdminSettingsForm = ({ onSettingsSaved }) => {
 
       const settingsData = {
         founderImageUrl: newFounderImageUrl,
+        geminiApiKey: geminiApiKey.trim(), // Save Gemini API key
         // Add other global settings here if needed later
       };
 
@@ -196,6 +200,23 @@ const AdminSettingsForm = ({ onSettingsSaved }) => {
               <span className="text-xs text-secondary ml-2">{uploadProgress}% uploaded</span>
             </div>
           )}
+        </div>
+
+        {/* Gemini API Key */}
+        <div className="mb-6">
+          <label htmlFor="geminiApiKey" className="block text-secondary text-sm font-semibold mb-2">
+            Google Gemini API Key (for Chatbot)
+          </label>
+          <input
+            type="password" // Use type="password" for sensitive key
+            id="geminiApiKey"
+            className="shadow-sm appearance-none border border-secondary rounded-lg w-full py-2 px-3 bg-dark-background text-light-text leading-tight focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+            value={geminiApiKey}
+            onChange={(e) => setGeminiApiKey(e.target.value)}
+            placeholder="AIzaSyC..."
+            disabled={loading}
+          />
+          <p className="text-xs text-gray-text mt-1">This key is used by the chatbot. Keep it secure.</p>
         </div>
 
         <div className="flex justify-end">
