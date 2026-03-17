@@ -7,14 +7,15 @@ import rehypeKatex from 'rehype-katex';
 import { FaRobot, FaTimes, FaPaperPlane, FaSpinner } from 'react-icons/fa'; // Import icons
 import LoadingSpinner from './LoadingSpinner'; // Assuming you have a LoadingSpinner component
 import { db } from '../firebase'; // Import Firestore db
-import { doc, getDoc } from 'firebase/firestore'; // Import Firestore functions
+import { collection, getDocs, orderBy, doc, getDoc, query, limit } from 'firebase/firestore'; // Import Firestore functions
 
 
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [loadingChatbot, setLoadingChatbot] = useState(false); // General loading state for chatbot operations (API key fetch, chat init, message send)
   const [error, setError] = useState(null);
-  const [chatHistory, setChatHistory] = useState([]); // Stores messages as { role: 'user' | 'model', text: string }
+  // Stores messages as { role: 'user' | 'model', text: string, followUps?: string[] }
+  const [chatHistory, setChatHistory] = useState([]);
   const [userMessage, setUserMessage] = useState('');
   const chatContainerRef = useRef(null);
   const inputRef = useRef(null);
@@ -23,6 +24,8 @@ const Chatbot = () => {
   const [geminiApiKeys, setGeminiApiKeys] = useState([]); // Array of all fetched API keys
   const [currentApiKeyIndex, setCurrentApiKeyIndex] = useState(0); // Index of the currently active key
   const [activeApiKey, setActiveApiKey] = useState(null); // The actual API key string currently in use
+  const [dynamicWebsiteData, setDynamicWebsiteData] = useState(''); // Stores dynamic data for prompt injection
+  const [hasConversationStarted, setHasConversationStarted] = useState(false); // New state for quick questions visibility
 
   // Initialize Gemini API only once per active key
   const genAI = useRef(null);
@@ -58,6 +61,7 @@ When responding:
 - If a user expresses interest in enrolling or needs detailed course information, direct them to the Courses page for program details and to the Contact page or our WhatsApp for direct inquiry.
 - **Never make up information.** If you don't have enough details, politely state that you can only assist with topics related to Mathematico, and direct the user to the most relevant page or to contact us directly.
 - **Conclude interactions by offering further assistance.**
+- **You have access to the following real-time data from the website (enclosed in <DYNAMIC_WEBSITE_DATA> tags). Use this information to answer specific queries, but do not just list it out. Summarize and guide users to the relevant pages for full details.**
 `;
 
   // Function to report API key errors via WhatsApp
@@ -125,6 +129,104 @@ When responding:
       // No direct call to initializeChat here to break circular dependency.
   }, [geminiApiKeys, currentApiKeyIndex]); // Dependencies: only what's needed for the switch logic.
 
+  // fetchDynamicWebsiteData: This function fetches and formats dynamic content from Firestore.
+  const fetchDynamicWebsiteData = useCallback(async () => {
+    const dataParts = [];
+    const baseUrl = window.location.origin;
+
+    // Fetch Latest Posts (top 3)
+    try {
+      const postsQ = query(collection(db, 'posts'), orderBy('timestamp', 'desc'), limit(3));
+      const postsSnap = await getDocs(postsQ);
+      if (!postsSnap.empty) {
+        dataParts.push("Latest 3 Posts:");
+        postsSnap.forEach(doc => {
+          const post = doc.data();
+          dataParts.push(`- ${post.title} (${baseUrl}/posts/${doc.id})`);
+        });
+      }
+    } catch (e) {
+      console.error("Error fetching posts for chatbot:", e);
+    }
+
+    // Fetch Courses (first 5, categorized by level)
+    try {
+      const coursesQ = query(collection(db, 'courses'), orderBy('title', 'asc'), limit(5));
+      const coursesSnap = await getDocs(coursesQ);
+      if (!coursesSnap.empty) {
+        dataParts.push("\nCourses Offered:");
+        coursesSnap.forEach(doc => {
+          const course = doc.data();
+          dataParts.push(`- ${course.title} (Level: ${course.level}, Category: ${course.category || 'N/A'}, Link: ${baseUrl}/courses)`);
+        });
+        if (coursesSnap.size >= 5) {
+            dataParts.push(`... and more courses are available on the Courses Page (${baseUrl}/courses).`);
+        }
+      }
+    } catch (e) {
+      console.error("Error fetching courses for chatbot:", e);
+    }
+
+    // Fetch Books (first 5)
+    try {
+      const booksQ = query(collection(db, 'books'), orderBy('title', 'asc'), limit(5));
+      const booksSnap = await getDocs(booksQ);
+      if (!booksSnap.empty) {
+        dataParts.push("\nBooks & PDF Resources:");
+        booksSnap.forEach(doc => {
+          const book = doc.data();
+          dataParts.push(`- ${book.title} (Link to PDF: ${book.googleDriveLink})`);
+        });
+        if (booksSnap.size >= 5) {
+            dataParts.push(`... and more books are available on the Books Page (${baseUrl}/books).`);
+        }
+      }
+    } catch (e) {
+      console.error("Error fetching books for chatbot:", e);
+    }
+
+    // Fetch Videos (first 5)
+    try {
+      const videosQ = query(collection(db, 'videos'), orderBy('title', 'asc'), limit(5));
+      const videosSnap = await getDocs(videosQ);
+      if (!videosSnap.empty) {
+        dataParts.push("\nEducational Videos:");
+        videosSnap.forEach(doc => {
+          const video = doc.data();
+          dataParts.push(`- ${video.title} (Link to YouTube: ${video.youtubeLink})`);
+        });
+        if (videosSnap.size >= 5) {
+            dataParts.push(`... and more videos are available on the Videos Page (${baseUrl}/videos).`);
+        }
+      }
+    } catch (e) {
+      console.error("Error fetching videos for chatbot:", e);
+    }
+
+    // Fetch Latest Reviews (top 3)
+    try {
+      const reviewsQ = query(collection(db, 'reviews'), orderBy('timestamp', 'desc'), limit(3));
+      const reviewsSnap = await getDocs(reviewsQ);
+      if (!reviewsSnap.empty) {
+        dataParts.push("\nLatest 3 Reviews:");
+        reviewsSnap.forEach(doc => {
+          const review = doc.data();
+          const feedbackSnippet = (review.feedbackText || '').substring(0, 70) + (review.feedbackText.length > 70 ? '...' : '');
+          dataParts.push(`- "${feedbackSnippet}" by ${review.reviewerName || 'Anonymous'} (${review.rating || 0} stars)`);
+        });
+      }
+    } catch (e) {
+      console.error("Error fetching reviews for chatbot:", e);
+    }
+
+    // Founder/Instructor Information (hardcoded reference to page, as detailed text isn't in settings/global)
+    dataParts.push(`\nInstructor Information:
+Detailed information about our lead instructor, Dipanjan Chatterjee (M.Sc. Pure Mathematics, teaching since 2011+ years of experience), including his qualifications, experience, and achievements, can be found on the Instructors Page: ${baseUrl}/instructors.`);
+
+
+    setDynamicWebsiteData(`<DYNAMIC_WEBSITE_DATA>\n${dataParts.join('\n')}\n</DYNAMIC_WEBSITE_DATA>`);
+  }, []);
+
   // initializeChat: This function performs the actual chat initialization.
   // It now implicitly uses `activeApiKey` from state rather than taking it as an argument.
   // On error, it calls `handleApiKeySwitch` (which only updates state, not re-initializes).
@@ -188,11 +290,10 @@ When responding:
       }
 
       // Gemini's internal history starts with the system instruction and an initial model response
-      // followed by any loaded conversation history.
       const geminiInitialHistory = [
         {
           role: "user", // Acting as a user providing system instructions
-          parts: [{ text: websiteInfo }]
+          parts: [{ text: websiteInfo + dynamicWebsiteData }] // Inject dynamic data here
         },
         {
           role: "model",
@@ -212,8 +313,10 @@ When responding:
       // Set the UI chat history. If there's loaded history, use it. Otherwise, start with the greeting.
       if (loadedChatHistoryForUI.length > 0) {
         setChatHistory(loadedChatHistoryForUI);
+        setHasConversationStarted(true); // If history exists, conversation has started
       } else {
         setChatHistory([{ role: 'model', text: modelGreeting }]);
+        setHasConversationStarted(false); // If no history, conversation hasn't started
       }
       setError(null); // Clear any previous API key errors now that chat is initialized
     } catch (err) {
@@ -224,7 +327,7 @@ When responding:
     } finally {
       setLoadingChatbot(false);
     }
-  }, [websiteInfo, activeApiKey, handleApiKeySwitch]); // Dependencies: what initializeChat *directly* uses.
+  }, [websiteInfo, activeApiKey, dynamicWebsiteData, handleApiKeySwitch]); // Dependencies: what initializeChat *directly* uses.
 
   // --- END: Refactored callback definitions for dependency management ---
 
@@ -284,8 +387,18 @@ When responding:
         chat.current = null;
         genAI.current = null;
         setChatHistory([]); // Clear UI history, but local storage persists
+        setHasConversationStarted(false); // Reset conversation state when closing
     }
   }, [isOpen, geminiApiKeys, activeApiKey, fetchGeminiApiKeys, initializeChat]);
+
+  // Effect to fetch dynamic website data when chatbot opens or API key is ready
+  useEffect(() => {
+    if (isOpen && activeApiKey) {
+      fetchDynamicWebsiteData();
+    } else if (!isOpen) {
+      setDynamicWebsiteData(''); // Clear dynamic data when chatbot closes
+    }
+  }, [isOpen, activeApiKey, fetchDynamicWebsiteData]);
 
   // Scroll to bottom of chat when new messages arrive
   useEffect(() => {
@@ -302,12 +415,13 @@ When responding:
     genAI.current = null; // Invalidate current genAI instance
     setError(null);
     setLoadingChatbot(true); // Show loading while re-initializing
+    setHasConversationStarted(false); // Reset conversation state on clear
 
     // Re-fetch keys and initialize chat with the first key
     const loadKeysAndInitChat = async () => {
         const firstKey = await fetchGeminiApiKeys();
         if (firstKey) {
-            initializeChat(firstKey);
+            initializeChat(); // Call initializeChat without argument, it uses state.
         } else {
             setLoadingChatbot(false); // If key fetch failed, stop loading
         }
@@ -343,12 +457,32 @@ When responding:
     setUserMessage('');
     setLoadingChatbot(true); // Indicate message sending is happening
     setError(null); // Clear previous errors
+    setHasConversationStarted(true); // Conversation has definitely started
 
     try {
       const result = await chat.current.sendMessage(currentMessage);
       const response = await result.response;
       const text = response.text();
-      setChatHistory(prev => [...prev, { role: 'model', text: text }]);
+
+      // IMPORTANT: For actual dynamic, AI-generated follow-up questions,
+      // you would need to adjust the AI's prompt to output them in a structured, parsable format
+      // (e.g., JSON with a 'text' field and a 'followUps' array).
+      // The current implementation provides static examples based on keywords.
+      let followUps = [];
+      if (text.toLowerCase().includes("course")) {
+        followUps = ["Tell me more about a specific course.", "How do I enroll in a course?"];
+      } else if (text.toLowerCase().includes("instructor") || text.toLowerCase().includes("dipanjan")) {
+        followUps = ["What are the instructor's qualifications?", "Where can I find his achievements?"];
+      } else if (text.toLowerCase().includes("app")) {
+        followUps = ["Where can I download the app?", "What features does the app have?"];
+      } else if (text.toLowerCase().includes("post") || text.toLowerCase().includes("blog")) {
+        followUps = ["Show me recent posts.", "What kind of posts do you have?"];
+      } else {
+        // Generic follow-ups for other responses
+        followUps = ["What are your office hours?", "How can I contact support?"];
+      }
+
+      setChatHistory(prev => [...prev, { role: 'model', text: text, followUps: followUps }]);
     } catch (err) {
       console.error("Error sending message to Gemini AI:", err);
       // Determine if it's an API key specific error
@@ -366,6 +500,21 @@ When responding:
         inputRef.current?.focus();
       }, 0);
     }
+  };
+
+  const handleQuickQuestionClick = (question) => {
+    setUserMessage(question);
+    // Directly submit the message when a quick question is clicked
+    // This will trigger handleSubmit and update hasConversationStarted
+    const event = new Event('submit', { cancelable: true, bubbles: true });
+    inputRef.current.form.dispatchEvent(event);
+  };
+
+  const handleFollowUpClick = (followUpQuestion) => {
+    setUserMessage(followUpQuestion);
+    // Directly submit the message when a follow-up question is clicked
+    const event = new Event('submit', { cancelable: true, bubbles: true });
+    inputRef.current.form.dispatchEvent(event);
   };
 
   return (
@@ -433,20 +582,81 @@ When responding:
             <LoadingSpinner size="medium" />
           )}
           {chatHistory.map((msg, index) => (
-            <div key={index} className={`mb-4 p-3 rounded-lg shadow-sm animate-fade-in ${
-              msg.role === 'user'
-                ? 'bg-primary text-light-text ml-auto rounded-br-none'
-                : 'bg-dark-background text-light-text mr-auto rounded-bl-none'
-            } max-w-[90%] md:max-w-[80%] markdown-content`}>
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm, remarkMath]}
-                rehypePlugins={[rehypeKatex]}
-                children={msg.text}
-              />
+            <div key={index} className="mb-4 animate-fade-in">
+              <div className={`p-3 rounded-lg shadow-sm ${
+                msg.role === 'user'
+                  ? 'bg-primary text-light-text ml-auto rounded-br-none'
+                  : 'bg-dark-background text-light-text mr-auto rounded-bl-none'
+              } max-w-[90%] md:max-w-[80%] markdown-content`}>
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm, remarkMath]}
+                  rehypePlugins={[rehypeKatex]}
+                  children={msg.text}
+                />
+              </div>
+              {/* Follow-up Buttons for Model messages */}
+              {msg.role === 'model' && msg.followUps && msg.followUps.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2 ml-auto max-w-[90%] md:max-w-[80%]">
+                  {msg.followUps.map((followUp, fIndex) => (
+                    <button
+                      key={fIndex}
+                      onClick={() => handleFollowUpClick(followUp)}
+                      className="px-3 py-1 bg-secondary text-dark-background rounded-full hover:bg-accent hover:text-light-text transition-colors duration-200 text-xs"
+                      disabled={loadingChatbot}
+                    >
+                      {followUp}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
           {loadingChatbot && chatHistory.length > 0 && <LoadingSpinner size="small" />} {/* Small spinner while sending message */}
         </div>
+
+        {/* Quick Questions / Follow-up Buttons (Conditional) */}
+        {!hasConversationStarted && (
+          <div className="mt-4 pt-2 border-t border-secondary">
+            <p className="text-gray-text text-sm mb-2">Quick Questions:</p>
+            <div className="flex flex-wrap gap-2 text-xs">
+              <button
+                onClick={() => handleQuickQuestionClick('What are your latest courses?')}
+                className="px-3 py-1 bg-secondary text-dark-background rounded-full hover:bg-accent hover:text-light-text transition-colors duration-200"
+                disabled={loadingChatbot || !chat.current || !activeApiKey || geminiApiKeys.length === 0}
+              >
+                Latest Courses
+              </button>
+              <button
+                onClick={() => handleQuickQuestionClick('Tell me about the instructor.')}
+                className="px-3 py-1 bg-secondary text-dark-background rounded-full hover:bg-accent hover:text-light-text transition-colors duration-200"
+                disabled={loadingChatbot || !chat.current || !activeApiKey || geminiApiKeys.length === 0}
+              >
+                Instructor Info
+              </button>
+              <button
+                onClick={() => handleQuickQuestionClick('Show me recent posts.')}
+                className="px-3 py-1 bg-secondary text-dark-background rounded-full hover:bg-accent hover:text-light-text transition-colors duration-200"
+                disabled={loadingChatbot || !chat.current || !activeApiKey || geminiApiKeys.length === 0}
+              >
+                Recent Posts
+              </button>
+              <button
+                onClick={() => handleQuickQuestionClick('How can I enroll in a course?')}
+                className="px-3 py-1 bg-secondary text-dark-background rounded-full hover:bg-accent hover:text-light-text transition-colors duration-200"
+                disabled={loadingChatbot || !chat.current || !activeApiKey || geminiApiKeys.length === 0}
+              >
+                Enrollment Process
+              </button>
+              <button
+                onClick={() => handleQuickQuestionClick('Where can I find study materials?')}
+                className="px-3 py-1 bg-secondary text-dark-background rounded-full hover:bg-accent hover:text-light-text transition-colors duration-200"
+                disabled={loadingChatbot || !chat.current || !activeApiKey || geminiApiKeys.length === 0}
+              >
+                Study Materials
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Message Input */}
         <form onSubmit={handleSendMessage} className="mt-4 flex items-center pt-2 border-t border-secondary">
