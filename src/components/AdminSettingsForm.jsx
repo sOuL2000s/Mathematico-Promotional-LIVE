@@ -3,9 +3,13 @@ import { db } from '../firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import ErrorDisplay from './ErrorDisplay';
 import LoadingSpinner from './LoadingSpinner';
-import { FaTimes, FaPlus, FaTrashAlt, FaEye, FaEyeSlash } from 'react-icons/fa'; // Import the close, plus, and trash icons
+import { FaTimes, FaPlus, FaTrashAlt, FaEye, FaEyeSlash, FaKey } from 'react-icons/fa'; // Import the close, plus, trash, and password-related icons
+import { auth } from '../firebase'; // Import auth
+import { sendPasswordResetEmail } from 'firebase/auth'; // Import sendPasswordResetEmail
+import { useAuth } from '../context/AuthContext'; // Import useAuth
 
 const AdminSettingsForm = ({ onSettingsSaved }) => {
+  const { currentUser } = useAuth(); // Get current user
   const [founderImageUrl, setFounderImageUrl] = useState('');
   const [geminiApiKeys, setGeminiApiKeys] = useState([]); // Array to store multiple API keys
   const [newApiKeyInput, setNewApiKeyInput] = useState(''); // Input for adding a new key
@@ -16,6 +20,10 @@ const AdminSettingsForm = ({ onSettingsSaved }) => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [showApiKeyVisibility, setShowApiKeyVisibility] = useState({}); // State to manage visibility of each API key
   const [showNewApiKey, setShowNewApiKey] = useState(false); // State to manage visibility of new API key input
+
+  // States for password change functionality
+  const [resetEmailInput, setResetEmailInput] = useState(currentUser?.email || '');
+  const [passwordResetSuccess, setPasswordResetSuccess] = useState(null); // 'true', 'false', or null
 
   const CLOUDINARY_CLOUD_NAME = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
   const CLOUDINARY_UPLOAD_PRESET = process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET;
@@ -31,12 +39,11 @@ const AdminSettingsForm = ({ onSettingsSaved }) => {
 
         if (settingsSnap.exists()) {
           const data = settingsSnap.data();
-          const fetchedKeys = data.geminiApiKeys || [];
           setFounderImageUrl(data.founderImageUrl || '');
           setPreviewUrl(data.founderImageUrl || '');
-          setGeminiApiKeys(fetchedKeys); // Fetch array of Gemini API keys
+          setGeminiApiKeys(data.geminiApiKeys || []); // Fetch array of Gemini API keys
           // Initialize visibility state for each fetched key
-          const initialVisibilityState = fetchedKeys.reduce((acc, _, index) => ({ ...acc, [index]: false }), {});
+          const initialVisibilityState = (data.geminiApiKeys || []).reduce((acc, _, index) => ({ ...acc, [index]: false }), {});
           setShowApiKeyVisibility(initialVisibilityState);
         } else {
           // If no settings document exists, initialize empty states
@@ -53,7 +60,14 @@ const AdminSettingsForm = ({ onSettingsSaved }) => {
       }
     };
     fetchSettings();
-  }, []);
+  }, [currentUser]); // Added currentUser to dependencies
+
+  useEffect(() => {
+      // Update resetEmailInput if currentUser email changes
+      if (currentUser?.email) {
+          setResetEmailInput(currentUser.email);
+      }
+  }, [currentUser]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -62,6 +76,7 @@ const AdminSettingsForm = ({ onSettingsSaved }) => {
       setPreviewUrl(URL.createObjectURL(file));
       setError(null);
       setUploadProgress(0);
+      setPasswordResetSuccess(null); // Clear password reset messages on other form changes
     } else {
       setFileToUpload(null);
       setPreviewUrl(founderImageUrl); // Revert to existing if no new file selected
@@ -94,6 +109,38 @@ const AdminSettingsForm = ({ onSettingsSaved }) => {
   const handleRemoveApiKey = (keyToRemove) => {
     setGeminiApiKeys(geminiApiKeys.filter(key => key !== keyToRemove));
     setError(null); // Clear any previous API key related errors
+    setPasswordResetSuccess(null); // Clear password reset messages on other form changes
+  };
+
+  const handleSendPasswordResetLink = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setPasswordResetSuccess(null); // Reset any previous success/failure messages for password reset
+
+    if (!resetEmailInput.trim()) {
+      setError("Email address for password reset cannot be empty.");
+      setLoading(false);
+      return;
+    }
+    
+    try {
+      await sendPasswordResetEmail(auth, resetEmailInput);
+      setPasswordResetSuccess(true);
+      alert(`Password reset link sent to ${resetEmailInput}. Please check your inbox (and spam folder).`);
+    } catch (err) {
+      console.error("Error sending password reset email:", err);
+      let errorMessage = "Failed to send password reset email.";
+      if (err.code === "auth/user-not-found") {
+        errorMessage = "No user found with that email address. Please ensure it's your registered admin email.";
+      } else if (err.code === "auth/invalid-email") {
+        errorMessage = "Invalid email address format.";
+      }
+      setError(errorMessage);
+      setPasswordResetSuccess(false);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const uploadFileToCloudinary = async (file) => {
@@ -308,10 +355,49 @@ const AdminSettingsForm = ({ onSettingsSaved }) => {
             className="bg-primary text-light-text font-bold py-2 px-6 rounded-lg hover:bg-blue-600 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
             disabled={loading}
           >
-            {loading ? <LoadingSpinner size="small" /> : 'Save Settings'}
+            {loading && uploadProgress > 0 && uploadProgress < 100 ? <LoadingSpinner size="small" /> : 'Save Settings'}
           </button>
         </div>
       </form>
+
+      {/* Password Change Section */}
+      <section className="mt-12 bg-dark-background p-6 rounded-lg shadow-inner border border-secondary">
+        <h3 className="text-2xl font-bold mb-6 text-primary flex items-center">
+          <FaKey className="mr-3 text-accent" /> Change Admin Password
+        </h3>
+        <p className="text-secondary text-sm mb-4">
+          To change your password, a reset link will be sent to your registered admin email address. You can set your new password by clicking that link.
+        </p>
+        {error && passwordResetSuccess === false && <ErrorDisplay message={error} />}
+        {passwordResetSuccess === true && (
+          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative my-4" role="alert">
+            <strong className="font-bold">Success!</strong>
+            <span className="block sm:inline ml-2">A password reset link has been sent to {resetEmailInput}. Please check your email.</span>
+          </div>
+        )}
+        <form onSubmit={handleSendPasswordResetLink} className="space-y-4">
+          <div>
+            <label htmlFor="resetEmail" className="block text-secondary text-sm font-semibold mb-2">
+              Registered Admin Email (Read-only)
+            </label>
+            <input
+              type="email"
+              id="resetEmail"
+              className="shadow-sm appearance-none border border-secondary rounded-lg w-full py-2 px-3 bg-dark-background text-light-text leading-tight cursor-not-allowed"
+              value={resetEmailInput}
+              readOnly
+              disabled={loading}
+            />
+          </div>
+          <button
+            type="submit"
+            className="bg-primary text-light-text font-bold py-2 px-6 rounded-lg hover:bg-blue-600 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto mt-6"
+            disabled={loading}
+          >
+            {loading && passwordResetSuccess === null ? <LoadingSpinner size="small" /> : 'Send Password Reset Link'}
+          </button>
+        </form>
+      </section>
     </div>
   );
 };
