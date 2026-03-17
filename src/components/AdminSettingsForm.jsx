@@ -3,16 +3,19 @@ import { db } from '../firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import ErrorDisplay from './ErrorDisplay';
 import LoadingSpinner from './LoadingSpinner';
-import { FaTimes } from 'react-icons/fa'; // Import the close icon
+import { FaTimes, FaPlus, FaTrashAlt, FaEye, FaEyeSlash } from 'react-icons/fa'; // Import the close, plus, and trash icons
 
 const AdminSettingsForm = ({ onSettingsSaved }) => {
   const [founderImageUrl, setFounderImageUrl] = useState('');
-  const [geminiApiKey, setGeminiApiKey] = useState(''); // New state for Gemini API Key
+  const [geminiApiKeys, setGeminiApiKeys] = useState([]); // Array to store multiple API keys
+  const [newApiKeyInput, setNewApiKeyInput] = useState(''); // Input for adding a new key
   const [fileToUpload, setFileToUpload] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(''); // Stores URL for preview (local or existing Cloudinary URL)
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [showApiKeyVisibility, setShowApiKeyVisibility] = useState({}); // State to manage visibility of each API key
+  const [showNewApiKey, setShowNewApiKey] = useState(false); // State to manage visibility of new API key input
 
   const CLOUDINARY_CLOUD_NAME = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
   const CLOUDINARY_UPLOAD_PRESET = process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET;
@@ -28,14 +31,19 @@ const AdminSettingsForm = ({ onSettingsSaved }) => {
 
         if (settingsSnap.exists()) {
           const data = settingsSnap.data();
+          const fetchedKeys = data.geminiApiKeys || [];
           setFounderImageUrl(data.founderImageUrl || '');
           setPreviewUrl(data.founderImageUrl || '');
-          setGeminiApiKey(data.geminiApiKey || ''); // Fetch Gemini API key
+          setGeminiApiKeys(fetchedKeys); // Fetch array of Gemini API keys
+          // Initialize visibility state for each fetched key
+          const initialVisibilityState = fetchedKeys.reduce((acc, _, index) => ({ ...acc, [index]: false }), {});
+          setShowApiKeyVisibility(initialVisibilityState);
         } else {
           // If no settings document exists, initialize empty states
           setFounderImageUrl('');
           setPreviewUrl('');
-          setGeminiApiKey(''); // Initialize empty
+          setGeminiApiKeys([]); // Initialize empty
+          setShowApiKeyVisibility({}); // Clear visibility state
         }
       } catch (err) {
         console.error("Error fetching settings: ", err);
@@ -69,6 +77,23 @@ const AdminSettingsForm = ({ onSettingsSaved }) => {
       document.getElementById('founderFileUpload').value = '';
     }
     setUploadProgress(0);
+  };
+
+  const handleAddApiKey = () => {
+    if (newApiKeyInput.trim() && !geminiApiKeys.includes(newApiKeyInput.trim())) {
+      setGeminiApiKeys([...geminiApiKeys, newApiKeyInput.trim()]);
+      setNewApiKeyInput('');
+      setError(null); // Clear any previous API key related errors
+    } else if (geminiApiKeys.includes(newApiKeyInput.trim())) {
+      setError("This API Key already exists.");
+    } else {
+      setError("API Key input cannot be empty.");
+    }
+  };
+
+  const handleRemoveApiKey = (keyToRemove) => {
+    setGeminiApiKeys(geminiApiKeys.filter(key => key !== keyToRemove));
+    setError(null); // Clear any previous API key related errors
   };
 
   const uploadFileToCloudinary = async (file) => {
@@ -132,7 +157,7 @@ const AdminSettingsForm = ({ onSettingsSaved }) => {
 
       const settingsData = {
         founderImageUrl: newFounderImageUrl,
-        geminiApiKey: geminiApiKey.trim(), // Save Gemini API key
+        geminiApiKeys: geminiApiKeys, // Save array of Gemini API keys
         // Add other global settings here if needed later
       };
 
@@ -202,21 +227,79 @@ const AdminSettingsForm = ({ onSettingsSaved }) => {
           )}
         </div>
 
-        {/* Gemini API Key */}
-        <div className="mb-6">
-          <label htmlFor="geminiApiKey" className="block text-secondary text-sm font-semibold mb-2">
-            Google Gemini API Key (for Chatbot)
+        {/* Gemini API Keys Management */}
+        <div className="mb-6 bg-dark-background p-4 rounded-lg border border-secondary">
+          <label className="block text-primary text-sm font-semibold mb-2">
+            Google Gemini API Keys (for Chatbot)
           </label>
-          <input
-            type="password" // Use type="password" for sensitive key
-            id="geminiApiKey"
-            className="shadow-sm appearance-none border border-secondary rounded-lg w-full py-2 px-3 bg-dark-background text-light-text leading-tight focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
-            value={geminiApiKey}
-            onChange={(e) => setGeminiApiKey(e.target.value)}
-            placeholder="AIzaSyC..."
-            disabled={loading}
-          />
-          <p className="text-xs text-gray-text mt-1">This key is used by the chatbot. Keep it secure.</p>
+          {geminiApiKeys.length === 0 && (
+            <p className="text-sm text-gray-text mb-3">No API keys added yet. Add at least one for the chatbot to function.</p>
+          )}
+          <ul className="space-y-2 mb-4">
+            {geminiApiKeys.map((key, index) => (
+              <li key={index} className="flex items-center justify-between bg-medium-dark p-2 rounded-md border border-secondary">
+                <span className="font-mono text-light-text text-sm truncate pr-2 flex-grow">
+                  {showApiKeyVisibility[index] ? key : `${key.substring(0, 5)}...${key.substring(key.length - 5)}`}
+                </span>
+                <div className="flex items-center space-x-2 flex-shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setShowApiKeyVisibility(prev => ({ ...prev, [index]: !prev[index] }))}
+                    className="text-gray-400 hover:text-gray-500 transition-colors duration-200"
+                    aria-label={showApiKeyVisibility[index] ? "Hide API key" : "Show API key"}
+                    disabled={loading}
+                  >
+                    {showApiKeyVisibility[index] ? <FaEyeSlash className="w-4 h-4" /> : <FaEye className="w-4 h-4" />}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveApiKey(key)}
+                    className="text-red-400 hover:text-red-500 transition-colors duration-200"
+                    aria-label={`Remove API Key ${index + 1}`}
+                    disabled={loading}
+                  >
+                    <FaTrashAlt className="w-4 h-4" />
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <div className="relative flex-grow">
+              <input
+                type={showNewApiKey ? "text" : "password"}
+                className="shadow-sm appearance-none border border-secondary rounded-lg w-full py-2 px-3 pr-10 bg-dark-background text-light-text leading-tight focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-200"
+                placeholder="Enter new Gemini API Key"
+                value={newApiKeyInput}
+                onChange={(e) => setNewApiKeyInput(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAddApiKey();
+                  }
+                }}
+                disabled={loading}
+              />
+              <button
+                type="button"
+                onClick={() => setShowNewApiKey(prev => !prev)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-text hover:text-light-text focus:outline-none"
+                aria-label={showNewApiKey ? "Hide new API key" : "Show new API key"}
+                disabled={loading}
+              >
+                {showNewApiKey ? <FaEyeSlash className="w-4 h-4" /> : <FaEye className="w-4 h-4" />}
+              </button>
+            </div>
+            <button
+              type="button"
+              onClick={handleAddApiKey}
+              className="bg-accent text-dark-background font-semibold py-2 px-4 rounded-lg hover:bg-cyan-400 transition-colors duration-300 disabled:opacity-50 w-full sm:w-auto flex items-center justify-center space-x-2"
+              disabled={loading || newApiKeyInput.trim() === ''}
+            >
+              <FaPlus /> <span>Add Key</span>
+            </button>
+          </div>
+          <p className="text-xs text-gray-text mt-3">These keys are used by the chatbot. Add multiple keys for redundancy. Keep them secure.</p>
         </div>
 
         <div className="flex justify-end">

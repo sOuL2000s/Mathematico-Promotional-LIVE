@@ -18,13 +18,17 @@ const Chatbot = () => {
   const [userMessage, setUserMessage] = useState('');
   const chatContainerRef = useRef(null);
   const inputRef = useRef(null);
-  const [geminiApiKey, setGeminiApiKey] = useState(null); // State to store fetched API key
 
-  // Initialize Gemini API only once
+  // New states for multiple API keys
+  const [geminiApiKeys, setGeminiApiKeys] = useState([]); // Array of all fetched API keys
+  const [currentApiKeyIndex, setCurrentApiKeyIndex] = useState(0); // Index of the currently active key
+  const [activeApiKey, setActiveApiKey] = useState(null); // The actual API key string currently in use
+
+  // Initialize Gemini API only once per active key
   const genAI = useRef(null);
   const chat = useRef(null);
 
-  // Founder's WhatsApp number for error reporting (REPLACE WITH ACTUAL FOUNDER'S WHATSAPP NUMBER)
+  // Founder's WhatsApp number for error reporting
   const founderWhatsappNumber = "+919876543210";
 
   const websiteInfo = `
@@ -59,7 +63,7 @@ When responding:
   // Function to report API key errors via WhatsApp
   const handleReportIssue = () => {
     if (error) {
-      const message = encodeURIComponent(`Mathematico AI Chatbot Error: ${error}\nPlease investigate.`);
+      const message = encodeURIComponent(`Mathematico AI Chatbot Error: ${error}\nActive API Key Index: ${currentApiKeyIndex}\nTotal Keys: ${geminiApiKeys.length}\nPlease investigate.`);
       const whatsappUrl = `https://wa.me/${founderWhatsappNumber}?text=${message}`;
       window.open(whatsappUrl, '_blank');
     } else {
@@ -67,38 +71,76 @@ When responding:
     }
   };
 
-  const fetchGeminiApiKey = useCallback(async () => {
+  const fetchGeminiApiKeys = useCallback(async () => {
     setLoadingChatbot(true); // Start loading for API key fetch
     try {
       const settingsRef = doc(db, 'settings', 'global');
       const settingsSnap = await getDoc(settingsRef);
-      if (settingsSnap.exists() && settingsSnap.data().geminiApiKey) {
-        const key = settingsSnap.data().geminiApiKey;
-        setGeminiApiKey(key);
+      if (settingsSnap.exists() && settingsSnap.data().geminiApiKeys && settingsSnap.data().geminiApiKeys.length > 0) {
+        const keys = settingsSnap.data().geminiApiKeys;
+        setGeminiApiKeys(keys);
+        setCurrentApiKeyIndex(0); // Start with the first key
+        setActiveApiKey(keys[0]); // Set the first key as active
         setError(null);
-        return key; // Return key for immediate use
+        return keys[0]; // Return first key for immediate use
       } else {
-        setError("Gemini API key is not configured. Please contact the administrator.");
+        setError("Gemini API keys are not configured. Please contact the administrator.");
+        setGeminiApiKeys([]);
+        setCurrentApiKeyIndex(0);
+        setActiveApiKey(null);
       }
     } catch (err) {
-      console.error("Error fetching Gemini API key:", err);
-      setError("Failed to load Gemini API key. Chatbot may not function.");
+      console.error("Error fetching Gemini API keys:", err);
+      setError("Failed to load Gemini API keys. Chatbot may not function.");
+      setGeminiApiKeys([]);
+      setCurrentApiKeyIndex(0);
+      setActiveApiKey(null);
     } finally {
       setLoadingChatbot(false); // End loading for API key fetch
     }
     return null;
   }, []);
 
-  const initializeChat = useCallback((apiKey) => {
-    if (!apiKey) {
+  // --- START: Refactored callback definitions for dependency management ---
+
+  // handleApiKeySwitch: This function's sole responsibility is to update state to switch the active key.
+  // It does NOT directly call initializeChat. The change in activeApiKey state will trigger the useEffect below.
+  const handleApiKeySwitch = useCallback(() => {
+      if (geminiApiKeys.length === 0) {
+          setError("No API keys are configured. Please inform the administrator.");
+          return;
+      }
+
+      const nextIndex = (currentApiKeyIndex + 1) % geminiApiKeys.length;
+      setCurrentApiKeyIndex(nextIndex);
+      setActiveApiKey(geminiApiKeys[nextIndex]); // This state update is what triggers re-initialization
+
+      // Invalidate current chat session and genAI instance so they get recreated with the new key.
+      chat.current = null;
+      genAI.current = null;
+
+      console.log(`Switching to API key at index: ${nextIndex}`);
+      setError(`API key failed. Switching to key ${nextIndex + 1}/${geminiApiKeys.length}. Please try sending your message again.`);
+
+      // No direct call to initializeChat here to break circular dependency.
+  }, [geminiApiKeys, currentApiKeyIndex]); // Dependencies: only what's needed for the switch logic.
+
+  // initializeChat: This function performs the actual chat initialization.
+  // It now implicitly uses `activeApiKey` from state rather than taking it as an argument.
+  // On error, it calls `handleApiKeySwitch` (which only updates state, not re-initializes).
+  const initializeChat = useCallback(() => {
+    const keyToUse = activeApiKey; // Use the currently active API key from state.
+
+    if (!keyToUse) {
       setError("Gemini API key is missing. Chatbot cannot be initialized.");
+      setLoadingChatbot(false);
       return;
     }
 
     try {
-      genAI.current = new GoogleGenerativeAI(apiKey);
+      genAI.current = new GoogleGenerativeAI(keyToUse);
       const model = genAI.current.getGenerativeModel({
-        model: "gemini-2.5-flash", // Using the flash model as requested
+        model: "gemini-2.5-flash",
         safetySettings: [
           {
             category: HarmCategory.HARM_CATEGORY_HARASSMENT,
@@ -175,19 +217,20 @@ When responding:
       }
       setError(null); // Clear any previous API key errors now that chat is initialized
     } catch (err) {
-      console.error("Failed to initialize Gemini AI:", err);
-      setError("Failed to initialize the chatbot. Please try again later.");
+      console.error("Failed to initialize Gemini AI with key:", keyToUse, err);
+      setError("Failed to initialize the chatbot with the current key. Trying next key.");
+      // Trigger API key switch by calling handleApiKeySwitch (which only updates state)
+      handleApiKeySwitch();
     } finally {
       setLoadingChatbot(false);
     }
-  }, [websiteInfo]); // websiteInfo is a dependency
+  }, [websiteInfo, activeApiKey, handleApiKeySwitch]); // Dependencies: what initializeChat *directly* uses.
+
+  // --- END: Refactored callback definitions for dependency management ---
 
   // Effect to save chat history to local storage whenever it changes
   useEffect(() => {
     if (chatHistory.length > 0) {
-      // Filter out the initial AI greeting if it's the only message and there's no user input yet,
-      // or if it's identical to the websiteInfo system prompt to avoid saving redundant info.
-      // We only save actual conversation turns.
       const conversationToSave = chatHistory.filter(msg => 
         !(msg.role === 'model' && msg.text.startsWith("Hello! I'm Mathematico AI") && chatHistory.length === 1)
       );
@@ -202,32 +245,47 @@ When responding:
     }
   }, [chatHistory]);
 
+  // Main effect for opening/closing chatbot and managing API keys/chat initialization
+  // This useEffect now orchestrates the calls to fetchKeys and initializeChat based on state.
   useEffect(() => {
-    if (isOpen && !geminiApiKey && !chat.current) {
-      // Only attempt to fetch key if chatbot is opening and key is not yet available
-      const loadKeyAndInitChat = async () => {
-        setLoadingChatbot(true); // Indicate overall chatbot loading
-        const key = await fetchGeminiApiKey();
-        if (key && !chat.current) {
-          initializeChat(key);
-        } else if (!key) {
-          setLoadingChatbot(false); // If key fetch failed, stop loading
-        }
-      };
-      loadKeyAndInitChat();
-    } else if (isOpen && geminiApiKey && !chat.current) {
-        // Key is already fetched, just initialize chat
-        setLoadingChatbot(true); // Indicate chat initialization
-        initializeChat(geminiApiKey);
-    } else if (!isOpen) {
-        // When closing, reset chat to allow re-initialization if opened again
+    if (isOpen) {
+      if (geminiApiKeys.length === 0) {
+        // No keys fetched yet or they were cleared, try to fetch
+        const loadKeysAndInitChat = async () => {
+          setLoadingChatbot(true);
+          const firstKey = await fetchGeminiApiKeys(); // This updates `geminiApiKeys` and `activeApiKey`
+          if (firstKey) {
+            // Once `activeApiKey` is set by `fetchGeminiApiKeys`, `initializeChat` can be called.
+            // The dependency `activeApiKey` in this useEffect will ensure `initializeChat` runs.
+            // We call it explicitly here for immediate response, as state updates can be asynchronous.
+            initializeChat();
+          } else {
+            setLoadingChatbot(false); // If key fetch failed, stop loading
+          }
+        };
+        loadKeysAndInitChat();
+      } else if (!chat.current && activeApiKey) {
+        // Keys are present, but chat not initialized (e.g., after clearing or switching keys)
+        setLoadingChatbot(true);
+        initializeChat();
+      } else if (!activeApiKey && geminiApiKeys.length > 0) {
+        // Keys are present but activeApiKey somehow got unset (e.g., initial load after fetchKeys)
+        setActiveApiKey(geminiApiKeys[0]); // This state update will trigger a re-render
+        setCurrentApiKeyIndex(0); // Ensure index is reset
+        setLoadingChatbot(true);
+        initializeChat(); // Initialize with the newly set activeApiKey
+      }
+      setTimeout(() => inputRef.current?.focus(), 300); // Focus input after modal opens
+    } else { // When closing
+        setUserMessage('');
+        setError(null);
+        setLoadingChatbot(false); // Ensure loading is reset when closing
+        // Chat and genAI instances are reset to ensure fresh state for potential key switches
         chat.current = null;
         genAI.current = null;
-        setChatHistory([]); // Clear UI history but local storage persists
-        setError(null);
-        setLoadingChatbot(false);
+        setChatHistory([]); // Clear UI history, but local storage persists
     }
-  }, [isOpen, geminiApiKey, fetchGeminiApiKey, initializeChat]);
+  }, [isOpen, geminiApiKeys, activeApiKey, fetchGeminiApiKeys, initializeChat]);
 
   // Scroll to bottom of chat when new messages arrive
   useEffect(() => {
@@ -236,6 +294,7 @@ When responding:
     }
   }, [chatHistory]);
 
+
   const handleClearChat = useCallback(() => {
     setChatHistory([]);
     localStorage.removeItem('mathematico_ai_chat_history');
@@ -243,60 +302,47 @@ When responding:
     genAI.current = null; // Invalidate current genAI instance
     setError(null);
     setLoadingChatbot(true); // Show loading while re-initializing
-    // Re-fetch key and initialize chat
-    const loadKeyAndInitChat = async () => {
-        const key = await fetchGeminiApiKey();
-        if (key) {
-            initializeChat(key);
+
+    // Re-fetch keys and initialize chat with the first key
+    const loadKeysAndInitChat = async () => {
+        const firstKey = await fetchGeminiApiKeys();
+        if (firstKey) {
+            initializeChat(firstKey);
         } else {
             setLoadingChatbot(false); // If key fetch failed, stop loading
         }
     };
-    loadKeyAndInitChat();
+    loadKeysAndInitChat();
     setTimeout(() => inputRef.current?.focus(), 500); // Focus input after clearing
-  }, [fetchGeminiApiKey, initializeChat]);
+  }, [fetchGeminiApiKeys, initializeChat]);
 
 
   const handleToggleChat = () => {
     setIsOpen(prev => !prev);
-    if (!isOpen) { // When opening
-        // Fetch key and initialize chat when opening
-        if (!geminiApiKey) {
-            const loadKeyAndInitChat = async () => {
-                setLoadingChatbot(true);
-                const key = await fetchGeminiApiKey();
-                if (key) {
-                    initializeChat(key);
-                } else {
-                    setLoadingChatbot(false);
-                }
-            };
-            loadKeyAndInitChat();
-        } else if (!chat.current) {
-            // Key already fetched but chat not initialized (e.g., after clearing)
-            initializeChat(geminiApiKey);
-        }
-        setTimeout(() => inputRef.current?.focus(), 300); // Focus input after modal opens
-    } else { // When closing
-        setUserMessage('');
-        setError(null);
-        setLoadingChatbot(false); // Ensure loading is reset when closing
-        // Note: chat.current and genAI.current are not reset here,
-        // so if the user re-opens, the chat session (and Gemini's internal history) persists.
-        // This is a design choice; if a fresh chat on every open is desired, they should be reset here.
-        // For local storage persistence across sessions, we rely on the `useEffect` on `chatHistory`.
-    }
+    // Logic for opening/closing is primarily handled by the main useEffect
   };
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!userMessage.trim() || loadingChatbot || !chat.current) return;
+    if (!userMessage.trim() || loadingChatbot || !chat.current || !activeApiKey) {
+      if (!activeApiKey && geminiApiKeys.length > 0) {
+          setError("Chatbot not initialized. Please wait or try again.");
+          // Attempt to re-initialize if possible
+          if (!chat.current && !loadingChatbot) {
+            setLoadingChatbot(true);
+            initializeChat(geminiApiKeys[currentApiKeyIndex]);
+          }
+      } else if (geminiApiKeys.length === 0) {
+          setError("No API keys are configured. Please inform the administrator.");
+      }
+      return;
+    }
 
     const currentMessage = userMessage.trim();
     setChatHistory(prev => [...prev, { role: 'user', text: currentMessage }]);
     setUserMessage('');
     setLoadingChatbot(true); // Indicate message sending is happening
-    setError(null);
+    setError(null); // Clear previous errors
 
     try {
       const result = await chat.current.sendMessage(currentMessage);
@@ -305,8 +351,14 @@ When responding:
       setChatHistory(prev => [...prev, { role: 'model', text: text }]);
     } catch (err) {
       console.error("Error sending message to Gemini AI:", err);
-      setError("Sorry, I'm having trouble connecting right now. Please try again.");
-      setChatHistory(prev => [...prev, { role: 'model', text: "Apologies, I encountered an error. Could you please rephrase or try again?" }]);
+      // Determine if it's an API key specific error
+      if (err.message && (err.message.includes("API key not valid") || err.message.includes("403") || err.message.includes("429"))) {
+          console.warn("Attempting to switch API key due to error:", err.message);
+          handleApiKeySwitch(); // Switch API key and inform user
+      } else {
+          setError("Sorry, I'm having trouble connecting right now. Please try again.");
+          setChatHistory(prev => [...prev, { role: 'model', text: "Apologies, I encountered an error. Could you please rephrase or try again?" }]);
+      }
     } finally {
       setLoadingChatbot(false); // End message sending loading
       // Ensure focus is returned to the input after it's re-enabled
@@ -405,13 +457,13 @@ When responding:
             placeholder="Type your message..."
             value={userMessage}
             onChange={(e) => setUserMessage(e.target.value)}
-            disabled={loadingChatbot || !chat.current}
+            disabled={loadingChatbot || !chat.current || !activeApiKey || geminiApiKeys.length === 0}
             aria-label="Your message to Mathematico AI"
           />
           <button
             type="submit"
             className="bg-primary text-light-text p-3 rounded-r-lg hover:bg-blue-600 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-            disabled={loadingChatbot || !userMessage.trim() || !chat.current}
+            disabled={loadingChatbot || !userMessage.trim() || !chat.current || !activeApiKey || geminiApiKeys.length === 0}
             aria-label="Send message"
           >
             {loadingChatbot ? <FaSpinner className="animate-spin" /> : <FaPaperPlane />}

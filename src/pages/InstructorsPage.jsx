@@ -5,6 +5,7 @@ import { doc, getDoc } from 'firebase/firestore'; // Import doc and getDoc
 import LoadingSpinner from '../components/LoadingSpinner'; // Import LoadingSpinner
 import ErrorDisplay from '../components/ErrorDisplay'; // Import ErrorDisplay
 
+
 const InstructorsPage = () => {
   const [founderImageUrl, setFounderImageUrl] = useState('');
   const [loading, setLoading] = useState(true);
