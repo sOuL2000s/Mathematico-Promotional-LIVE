@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FaFacebookF, FaWhatsapp, FaTelegramPlane } from 'react-icons/fa';
+import { FaFacebookF, FaWhatsapp, FaTelegramPlane, FaInstagram } from 'react-icons/fa'; // Added FaInstagram
 import { MdEmail, MdPhone, MdLocationOn } from 'react-icons/md';
 
 const Footer = () => {
@@ -21,6 +21,9 @@ const Footer = () => {
             </a>
             <a href="https://t.me/dipanjan9271" target="_blank" rel="noopener noreferrer" aria-label="Telegram" className="hover:text-accent transition-colors text-2xl">
               <FaTelegramPlane />
+            </a>
+            <a href="https://www.instagram.com/dipanjan_chattopadhyay" target="_blank" rel="noopener noreferrer" aria-label="Instagram Page" className="hover:text-accent transition-colors text-2xl">
+              <FaInstagram />
             </a>
           </div>
         </div>
